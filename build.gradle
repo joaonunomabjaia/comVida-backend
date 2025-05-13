@@ -1,0 +1,88 @@
+plugins {
+    id("io.micronaut.application") version "4.5.3"
+    id("com.gradleup.shadow") version "8.3.6"
+    id("io.micronaut.test-resources") version "4.5.3"
+    id("io.micronaut.aot") version "4.5.3"
+}
+
+version = "0.1"
+group = "mz.org.csaude.comvida.backend"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    annotationProcessor("io.micronaut:micronaut-http-validation")
+    annotationProcessor("io.micronaut.langchain4j:micronaut-langchain4j-processor")
+    annotationProcessor("io.micronaut.openapi:micronaut-openapi")
+    annotationProcessor("io.micronaut.security:micronaut-security-annotations")
+    annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
+    implementation("io.micronaut:micronaut-http-client")
+    implementation("io.micronaut.jms:micronaut-jms-activemq-artemis")
+    implementation("io.micronaut.kafka:micronaut-kafka")
+    implementation("io.micronaut.langchain4j:micronaut-langchain4j-mistralai")
+    implementation("io.micronaut.langchain4j:micronaut-langchain4j-ollama")
+    implementation("io.micronaut.security:micronaut-security")
+    implementation("io.micronaut.security:micronaut-security-jwt")
+    implementation("io.micronaut.serde:micronaut-serde-jackson")
+    implementation("io.micronaut.sql:micronaut-jdbc-hikari")
+    compileOnly("io.micronaut.openapi:micronaut-openapi-annotations")
+    runtimeOnly("io.goodforgod:slf4j-simple-logger:2.0.0")
+    runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("org.yaml:snakeyaml")
+    testImplementation("org.junit.platform:junit-platform-suite-engine")
+    testResourcesService("io.micronaut.langchain4j:micronaut-langchain4j-ollama-testresources")
+    aotPlugins platform("io.micronaut.platform:micronaut-platform:4.8.2")
+    aotPlugins("io.micronaut.security:micronaut-security-aot")
+}
+
+
+application {
+    mainClass = "mz.org.csaude.comvida.backend.Application"
+}
+java {
+    sourceCompatibility = JavaVersion.toVersion("17")
+    targetCompatibility = JavaVersion.toVersion("17")
+}
+
+
+tasks {
+    dockerBuild {
+        images = ["${System.env.DOCKER_IMAGE ?: project.name}:$project.version"]
+    }
+
+    dockerBuildNative {
+        images = ["${System.env.DOCKER_IMAGE ?: project.name}:$project.version"]
+    }
+}
+graalvmNative.toolchainDetection = false
+
+micronaut {
+    runtime("netty")
+    testRuntime("junit5")
+    processing {
+        incremental(true)
+        annotations("mz.org.csaude.comvida.backend.*")
+    }
+    testResources {
+        additionalModules.add("jdbc-postgresql")
+        sharedServer = true
+    }
+    aot {
+        // Please review carefully the optimizations enabled below
+        // Check https://micronaut-projects.github.io/micronaut-aot/latest/guide/ for more details
+        optimizeServiceLoading = false
+        convertYamlToJava = false
+        precomputeOperations = true
+        cacheEnvironment = true
+        optimizeClassLoading = true
+        deduceEnvironment = true
+        optimizeNetty = true
+        replaceLogbackXml = true
+        configurationProperties.put("micronaut.security.jwks.enabled", "false")
+    }
+}
+
+
+

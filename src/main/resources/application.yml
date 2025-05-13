@@ -1,0 +1,48 @@
+micronaut:
+  application:
+    name: comvida
+  security:
+    intercept-url-map:
+      - access: isAnonymous()
+        pattern: /swagger/**
+      - access: isAnonymous()
+        pattern: /swagger-ui/**
+      - access: isAnonymous()
+        pattern: /rapidoc/**
+    authentication: bearer
+    token:
+      jwt:
+        signatures:
+          secret:
+            generator:
+              secret: ${JWT_GENERATOR_SIGNATURE_SECRET:pleaseChangeThisSecretForANewOne}
+
+    jms:
+      activemq:
+        artemis:
+          enabled: true
+          connection-string: tcp://localhost:61616
+
+    router:
+      static-resources:
+        swagger:
+          enabled: true
+          paths: classpath:META-INF/swagger
+          mapping: /swagger/**
+        swagger-ui:
+          enabled: true
+          paths: classpath:META-INF/swagger/views/swagger-ui
+          mapping: /swagger-ui/**
+        rapidoc:
+          enabled: true
+          paths: classpath:META-INF/swagger/views/rapidoc
+          mapping: /rapidoc/**
+datasources:
+  default:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    db-type: postgres
+
+

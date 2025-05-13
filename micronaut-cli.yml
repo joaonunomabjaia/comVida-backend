@@ -1,0 +1,6 @@
+applicationType: default
+defaultPackage: mz.org.csaude.comvida.backend
+testFramework: junit
+sourceLanguage: java
+buildTool: gradle
+features: [ app-name, github-workflow-docker-registry, graalvm, gradle, http-client, java, java-application, jdbc-hikari, jms-activemq-artemis, junit, junit-platform-suite-engine, kafka, langchain4j-mistralai, langchain4j-ollama, micronaut-aot, micronaut-build, micronaut-http-validation, netty-server, openapi, postgres, rapidoc, readme, security, security-annotations, security-jwt, serialization-jackson, shade, slf4j-simple-logger, static-resources, swagger-ui, test-resources, yaml, yaml-build ]
