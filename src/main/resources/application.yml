@@ -1,6 +1,8 @@
 micronaut:
   application:
     name: comvida
+  server:
+    port: 8097
   security:
     intercept-url-map:
       - access: isAnonymous()
