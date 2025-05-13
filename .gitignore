@@ -1,15 +1,33 @@
-Thumbs.db
-.DS_Store
+# Compiled class files
+*.class
+
+# Log files
+*.log
+/logs/
+
+# Gradle
 .gradle
 build/
+!gradle-wrapper.jar
+
+# Java
+*.jar
+*.war
+
+# Micronaut
 target/
 out/
-.micronaut/
-.idea
+
+# IntelliJ
+.idea/
 *.iml
-*.ipr
-*.iws
-.project
-.settings
-.classpath
-.factorypath
+
+# VS Code
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
