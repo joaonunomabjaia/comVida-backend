@@ -7,6 +7,7 @@ Micronaut backend for the **comVida** community intervention platform.
 - Micronaut Framework
 - PostgreSQL (via Docker)
 - ActiveMQ Artemis (JMS)
+- Apache Kafka (via Docker)
 - JWT-based Authentication
 - Liquibase for DB migrations
 
