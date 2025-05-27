@@ -1,19 +1,16 @@
 package mz.org.csaude.comvida.backend.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-import mz.org.csaude.comvida.backend.base.BaseEntity;
 
 @Entity
 @Getter
 @Setter
 @Table(name = "users")
-public class User extends BaseEntity {
-
-    @ManyToOne
-    @JoinColumn(name = "person_id")
-    private Person person;
+public class User extends Person {
 
     @Column(unique = true, nullable = false)
     private String username;

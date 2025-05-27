@@ -16,8 +16,6 @@ public interface PatientRepository extends CrudRepository<Patient, Long> {
     @Override
     Optional<Patient> findById(@NotNull Long id);
 
-    List<Patient> findByPersonId(Long personId);
-
     List<Patient> findByStatus(String status);
 
     Optional<Patient> findByUuid(String uuid);

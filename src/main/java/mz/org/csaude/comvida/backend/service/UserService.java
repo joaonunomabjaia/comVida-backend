@@ -46,10 +46,17 @@ public class UserService extends BaseService {
         }
 
         User toUpdate = existing.get();
-        toUpdate.setPerson(user.getPerson());
         toUpdate.setUsername(user.getUsername());
         toUpdate.setPassword(user.getPassword());
         toUpdate.setStatus(user.getStatus());
+
+        // Campos herdados de Person
+        toUpdate.setNames(user.getNames());
+        toUpdate.setSex(user.getSex());
+        toUpdate.setBirthdate(user.getBirthdate());
+        toUpdate.setAddress(user.getAddress());
+        toUpdate.setPersonAttributes(user.getPersonAttributes());
+
         toUpdate.setUpdatedAt(DateUtils.getCurrentDate());
         toUpdate.setUpdatedBy(user.getUpdatedBy());
 

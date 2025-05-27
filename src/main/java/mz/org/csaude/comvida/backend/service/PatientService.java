@@ -6,6 +6,7 @@ import mz.org.csaude.comvida.backend.base.BaseService;
 import mz.org.csaude.comvida.backend.entity.Patient;
 import mz.org.csaude.comvida.backend.repository.PatientRepository;
 import mz.org.csaude.comvida.backend.util.DateUtils;
+import mz.org.fgh.mentoring.util.LifeCycleStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,7 +35,7 @@ public class PatientService extends BaseService {
     @Transactional
     public Patient create(Patient patient) {
         patient.setCreatedAt(DateUtils.getCurrentDate());
-        patient.setLifeCycleStatus(mz.org.fgh.mentoring.util.LifeCycleStatus.valueOf("ACTIVE"));
+        patient.setLifeCycleStatus(LifeCycleStatus.ACTIVE);
         return patientRepository.save(patient);
     }
 
@@ -46,9 +47,18 @@ public class PatientService extends BaseService {
         }
 
         Patient toUpdate = existing.get();
-        toUpdate.setPerson(patient.getPerson());
+
+        // Campos herdados de Person
+        toUpdate.setNames(patient.getNames());
+        toUpdate.setSex(patient.getSex());
+        toUpdate.setBirthdate(patient.getBirthdate());
+        toUpdate.setAddress(patient.getAddress());
+        toUpdate.setPersonAttributes(patient.getPersonAttributes());
+
+        // Campos de Patient
         toUpdate.setPatientIdentifier(patient.getPatientIdentifier());
         toUpdate.setStatus(patient.getStatus());
+
         toUpdate.setUpdatedAt(DateUtils.getCurrentDate());
         toUpdate.setUpdatedBy(patient.getUpdatedBy());
 
@@ -57,7 +67,6 @@ public class PatientService extends BaseService {
 
     @Transactional
     public void delete(String uuid) {
-        Optional<Patient> existing = patientRepository.findByUuid(uuid);
-        existing.ifPresent(patientRepository::delete);
+        patientRepository.findByUuid(uuid).ifPresent(patientRepository::delete);
     }
 }

@@ -12,7 +12,15 @@ import mz.org.csaude.comvida.backend.entity.Patient;
 public class PatientDTO extends BaseEntityDTO {
 
     private String uuid;
-    private PersonDTO person;
+
+    // Dados herdados de Person
+    private String names;
+    private String sex;
+    private String birthdate;
+    private String address;
+    private String personAttributes;
+
+    // Dados próprios de Patient
     private String patientIdentifier;
     private String status;
 
@@ -20,7 +28,11 @@ public class PatientDTO extends BaseEntityDTO {
 
     public PatientDTO(Patient patient) {
         this.uuid = patient.getUuid();
-        this.person = patient.getPerson() != null ? new PersonDTO(patient.getPerson()) : null;
+        this.names = patient.getNames();
+        this.sex = patient.getSex();
+        this.birthdate = patient.getBirthdate() != null ? patient.getBirthdate().toString() : null;
+        this.address = patient.getAddress();
+        this.personAttributes = patient.getPersonAttributes();
         this.patientIdentifier = patient.getPatientIdentifier();
         this.status = patient.getStatus();
     }
