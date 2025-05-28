@@ -22,6 +22,8 @@ public class UserDTO extends BaseEntityDTO {
     private String birthdate;
     private String address;
     private String personAttributes;
+    private Boolean shouldResetPassword;
+    private String salt;
 
     public UserDTO() {}
 
@@ -37,5 +39,7 @@ public class UserDTO extends BaseEntityDTO {
         this.birthdate = user.getBirthdate() != null ? user.getBirthdate().toString() : null;
         this.address = user.getAddress();
         this.personAttributes = user.getPersonAttributes();
+        this.shouldResetPassword = user.getShouldResetPassword();
+        this.salt = user.getSalt();
     }
 }

@@ -7,9 +7,10 @@ import mz.org.csaude.comvida.backend.base.BaseEntity;
 import java.util.Date;
 
 @Entity
+@Table(name = "person")
+@Inheritance(strategy = InheritanceType.JOINED)
 @Getter
 @Setter
-@Table(name = "persons")
 public class Person extends BaseEntity {
 
     @Column(columnDefinition = "json")
