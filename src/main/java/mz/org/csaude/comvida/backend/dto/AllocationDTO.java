@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import mz.org.csaude.comvida.backend.base.BaseEntityDTO;
 import mz.org.csaude.comvida.backend.entity.Allocation;
+import mz.org.csaude.comvida.backend.entity.UserGroupRole;
 
 import java.util.Date;
 
@@ -15,7 +16,7 @@ public class AllocationDTO extends BaseEntityDTO {
 
     private String uuid;
     private CohortMemberDTO cohortMember;
-    private UserServiceRoleDTO userServiceRole;
+    private UserGroupRole userServiceRole;
     private UserDTO assignedBy;
 
     private Date allocationDate;
@@ -27,7 +28,7 @@ public class AllocationDTO extends BaseEntityDTO {
     public AllocationDTO(Allocation allocation) {
         this.uuid = allocation.getUuid();
         this.cohortMember = allocation.getCohortMember() != null ? new CohortMemberDTO(allocation.getCohortMember()) : null;
-        this.userServiceRole = allocation.getUserServiceRole() != null ? new UserServiceRoleDTO(allocation.getUserServiceRole()) : null;
+        this.userServiceRole = allocation.getUserServiceRole() != null ? new UserGroupRole(allocation.getUserServiceRole()) : null;
         this.assignedBy = allocation.getAssignedBy() != null ? new UserDTO(allocation.getAssignedBy()) : null;
         this.allocationDate = allocation.getAllocationDate();
         this.form = allocation.getForm();

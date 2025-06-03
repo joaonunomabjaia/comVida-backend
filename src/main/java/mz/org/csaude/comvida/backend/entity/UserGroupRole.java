@@ -11,18 +11,26 @@ import mz.org.csaude.comvida.backend.base.BaseEntity;
 @Entity
 @Getter
 @Setter
-@Table(name = "user_service_roles")
-public class UserServiceRole extends BaseEntity {
+@Table(name = "user_group_roles")
+public class UserGroupRole extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "service_id")
-    private ProgramService service;
+    @JoinColumn(name = "group_id")
+    private Group group;
 
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
+
+    public UserGroupRole(UserGroupRole userServiceRole) {
+
+    }
+
+    public UserGroupRole() {
+
+    }
 }

@@ -48,7 +48,7 @@ public class CohortMemberService extends BaseService {
         CohortMember toUpdate = existing.get();
         toUpdate.setCohort(cohortMember.getCohort());
         toUpdate.setPatient(cohortMember.getPatient());
-        toUpdate.setSourceType(cohortMember.getSourceType());
+        toUpdate.setCohortMemberSource(cohortMember.getCohortMemberSource());
         toUpdate.setOriginId(cohortMember.getOriginId());
         toUpdate.setInclusionDate(cohortMember.getInclusionDate());
         toUpdate.setExclusionDate(cohortMember.getExclusionDate());

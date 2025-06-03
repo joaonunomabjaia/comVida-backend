@@ -1,62 +1,71 @@
 package mz.org.csaude.comvida.backend.service;
 
+import io.micronaut.core.annotation.Nullable;
+import io.micronaut.data.model.Page;
+import io.micronaut.data.model.Pageable;
 import jakarta.inject.Singleton;
 import jakarta.transaction.Transactional;
 import mz.org.csaude.comvida.backend.entity.Cohort;
 import mz.org.csaude.comvida.backend.repository.CohortRepository;
-import mz.org.csaude.comvida.backend.base.BaseService;
 import mz.org.csaude.comvida.backend.util.DateUtils;
+import mz.org.fgh.mentoring.util.LifeCycleStatus;
 
-import java.util.List;
 import java.util.Optional;
 
 @Singleton
-public class CohortService extends BaseService {
+public class CohortService {
 
-    private final CohortRepository cohortRepository;
+    private final CohortRepository repository;
 
-    public CohortService(CohortRepository cohortRepository) {
-        this.cohortRepository = cohortRepository;
+    public CohortService(CohortRepository repository) {
+        this.repository = repository;
     }
 
-    public List<Cohort> findAll() {
-        return cohortRepository.findAll();
+    public Page<Cohort> findAll(@Nullable Pageable pageable) {
+        return null;
+    }
+
+    public Page<Cohort> searchByName(String name, Pageable pageable) {
+        return repository.findByNameIlike("%" + name + "%", pageable);
     }
 
     public Optional<Cohort> findById(Long id) {
-        return cohortRepository.findById(id);
+        return repository.findById(id);
     }
 
     public Optional<Cohort> findByUuid(String uuid) {
-        return cohortRepository.findByUuid(uuid);
+        return repository.findByUuid(uuid);
     }
 
     @Transactional
     public Cohort create(Cohort cohort) {
         cohort.setCreatedAt(DateUtils.getCurrentDate());
-        cohort.setLifeCycleStatus(mz.org.fgh.mentoring.util.LifeCycleStatus.valueOf("ACTIVE"));
-        return cohortRepository.save(cohort);
+        cohort.setLifeCycleStatus(LifeCycleStatus.ACTIVE);
+        return repository.save(cohort);
     }
 
     @Transactional
     public Cohort update(Cohort cohort) {
-        Optional<Cohort> existing = cohortRepository.findByUuid(cohort.getUuid());
-        if (existing.isEmpty()) {
-            throw new RuntimeException("Cohort not found");
-        }
+        Optional<Cohort> existing = repository.findByUuid(cohort.getUuid());
+        if (existing.isEmpty()) throw new RuntimeException("Cohort not found");
 
         Cohort toUpdate = existing.get();
         toUpdate.setName(cohort.getName());
         toUpdate.setDescription(cohort.getDescription());
+        toUpdate.setProgramActivity(cohort.getProgramActivity());
         toUpdate.setUpdatedAt(DateUtils.getCurrentDate());
         toUpdate.setUpdatedBy(cohort.getUpdatedBy());
 
-        return cohortRepository.update(toUpdate);
+        return repository.update(toUpdate);
     }
 
     @Transactional
     public void delete(String uuid) {
-        Optional<Cohort> existing = cohortRepository.findByUuid(uuid);
-        existing.ifPresent(cohortRepository::delete);
+        repository.findByUuid(uuid).ifPresent(repository::delete);
     }
+
+    public Page<Cohort> findByProgramActivityId(Long programActivityId, Pageable pageable) {
+    return repository.findByProgramActivityId(programActivityId, pageable);
+}
+
 }

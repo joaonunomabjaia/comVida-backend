@@ -1,9 +1,6 @@
 package mz.org.csaude.comvida.backend.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Lob;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import mz.org.csaude.comvida.backend.base.BaseEntity;
@@ -19,8 +16,7 @@ public class Cohort extends BaseEntity {
 
     private String description;
 
-    @Lob
-    @Column(name = "template_file", nullable = false, columnDefinition = "MEDIUMBLOB")
-    private byte[] templateFile;
-
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "program_activity_id", nullable = false)
+    private ProgramActivity programActivity;
 }

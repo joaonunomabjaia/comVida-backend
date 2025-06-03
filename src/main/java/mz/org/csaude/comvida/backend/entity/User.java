@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -24,4 +26,12 @@ public class User extends Person {
 
     @Column(length = 255)
     private String salt;
+
+    public boolean isActive() {
+        return this.getLifeCycleStatus().equals(mz.org.fgh.mentoring.util.LifeCycleStatus.ACTIVE);
+    }
+
+    public List<UserGroupRole> getUserGroupRoles() {
+        return null;
+    }
 }

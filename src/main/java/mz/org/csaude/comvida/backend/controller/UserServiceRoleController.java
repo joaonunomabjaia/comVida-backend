@@ -13,10 +13,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.inject.Inject;
 import mz.org.csaude.comvida.backend.api.RESTAPIMapping;
-import mz.org.csaude.comvida.backend.dto.UserServiceRoleDTO;
-import mz.org.csaude.comvida.backend.entity.UserServiceRole;
+import mz.org.csaude.comvida.backend.entity.UserGroupRole;
 import mz.org.csaude.comvida.backend.error.ComVidaAPIError;
-import mz.org.csaude.comvida.backend.service.UserServiceRoleService;
+import mz.org.csaude.comvida.backend.service.UserGroupRoleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +28,7 @@ import java.util.Optional;
 public class UserServiceRoleController {
 
     @Inject
-    private UserServiceRoleService userServiceRoleService;
+    private UserGroupRoleService userGroupRoleService;
 
     private static final Logger LOG = LoggerFactory.getLogger(UserServiceRoleController.class);
 
@@ -38,7 +37,7 @@ public class UserServiceRoleController {
     @Get("/")
     public HttpResponse<?> listAll(@Nullable Pageable pageable) {
         try {
-            List<UserServiceRole> page = userServiceRoleService.findAll(pageable);
+            List<UserGroupRole> page = userGroupRoleService.findAll(pageable);
             return HttpResponse.ok(page);
         } catch (Exception e) {
             LOG.error("Erro ao listar UserServiceRoles", e);
@@ -52,8 +51,8 @@ public class UserServiceRoleController {
     @Get("/{id}")
     public HttpResponse<?> findById(@NonNull @PathVariable Long id) {
         try {
-            Optional<UserServiceRole> opt = userServiceRoleService.findById(id);
-            return opt.map(userServiceRole -> HttpResponse.ok(new UserServiceRoleDTO(userServiceRole)))
+            Optional<UserGroupRole> opt = userGroupRoleService.findById(id);
+            return opt.map(userServiceRole -> HttpResponse.ok(new UserGroupRole(userServiceRole)))
                     .orElse(HttpResponse.notFound());
         } catch (Exception e) {
             LOG.error("Erro ao buscar UserServiceRole por ID", e);
@@ -82,9 +81,9 @@ public class UserServiceRoleController {
     @Delete("/{uuid}")
     public HttpResponse<?> delete(@NonNull @PathVariable String uuid) {
         try {
-            Optional<UserServiceRole> opt = userServiceRoleService.findByUuid(uuid);
+            Optional<UserGroupRole> opt = userGroupRoleService.findByUuid(uuid);
             if (opt.isPresent()) {
-                userServiceRoleService.delete(uuid);
+                userGroupRoleService.delete(uuid);
                 LOG.info("UserServiceRole deletado: {}", uuid);
                 return HttpResponse.ok();
             } else {

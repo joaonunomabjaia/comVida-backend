@@ -18,6 +18,20 @@ micronaut:
           secret:
             generator:
               secret: ${JWT_GENERATOR_SIGNATURE_SECRET:pleaseChangeThisSecretForANewOne}
+#tag::security[]
+---
+#tag::refresh[]
+micronaut:
+  security:
+    token:
+      jwt:
+        generator:
+          refresh-token:
+            secret:${JWT_GENERATOR_SIGNATURE_SECRET:pleaseChangeThisSecretForANewOne}
+          access-token:
+            expiration: 900000
+            #end::refresh[]
+
     jms:
       activemq:
         artemis:
@@ -45,6 +59,9 @@ datasources:
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
     db-type: postgres
+    schema-generate: NONE
+    maximum-pool-size: 50
+    minimum-idle: 5
 
 liquibase:
   datasources:
@@ -52,3 +69,20 @@ liquibase:
       enabled: true
       change-log: classpath:db/liquibase-changelog.xml
       drop-first: false
+
+# management endpoints settings
+endpoints:
+  swagger:
+    enabled: true
+  all:
+    enabled: false
+    sensitive: false
+  stop:
+    enabled: false
+
+# JSON settings
+jackson:
+  property-naming-strategy: LOWER_CAMEL_CASE
+  serialization:
+    writeDatesAsTimestamps: false
+    writeDatesWithZoneId: true

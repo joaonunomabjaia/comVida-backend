@@ -2,13 +2,11 @@ package mz.org.csaude.comvida.backend.service;
 
 import jakarta.inject.Singleton;
 import jakarta.transaction.Transactional;
-import mz.org.csaude.comvida.backend.entity.SourceType;
+import mz.org.csaude.comvida.backend.entity.CohortMemberSource;
 import mz.org.csaude.comvida.backend.repository.SourceTypeRepository;
 import mz.org.csaude.comvida.backend.base.BaseService;
 import mz.org.csaude.comvida.backend.util.DateUtils;
-import mz.org.csaude.comvida.backend.util.Utilities;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,43 +19,43 @@ public class SourceTypeService extends BaseService {
         this.sourceTypeRepository = sourceTypeRepository;
     }
 
-    public List<SourceType> findAll() {
+    public List<CohortMemberSource> findAll() {
         return sourceTypeRepository.findAll();
     }
 
-    public Optional<SourceType> findById(Long id) {
+    public Optional<CohortMemberSource> findById(Long id) {
         return sourceTypeRepository.findById(id);
     }
 
-    public Optional<SourceType> findByUuid(String uuid) {
+    public Optional<CohortMemberSource> findByUuid(String uuid) {
         return sourceTypeRepository.findByUuid(uuid);
     }
 
     @Transactional
-    public SourceType create(SourceType sourceType) {
-        sourceType.setCreatedAt(DateUtils.getCurrentDate());
-        sourceType.setLifeCycleStatus(mz.org.fgh.mentoring.util.LifeCycleStatus.valueOf("ACTIVE"));
-        return sourceTypeRepository.save(sourceType);
+    public CohortMemberSource create(CohortMemberSource cohortMemberSource) {
+        cohortMemberSource.setCreatedAt(DateUtils.getCurrentDate());
+        cohortMemberSource.setLifeCycleStatus(mz.org.fgh.mentoring.util.LifeCycleStatus.valueOf("ACTIVE"));
+        return sourceTypeRepository.save(cohortMemberSource);
     }
 
     @Transactional
-    public SourceType update(SourceType sourceType) {
-        Optional<SourceType> existing = sourceTypeRepository.findByUuid(sourceType.getUuid());
+    public CohortMemberSource update(CohortMemberSource cohortMemberSource) {
+        Optional<CohortMemberSource> existing = sourceTypeRepository.findByUuid(cohortMemberSource.getUuid());
         if (existing.isEmpty()) {
             throw new RuntimeException("SourceType not found");
         }
 
-        SourceType toUpdate = existing.get();
-        toUpdate.setName(sourceType.getName());
+        CohortMemberSource toUpdate = existing.get();
+        toUpdate.setName(cohortMemberSource.getName());
         toUpdate.setUpdatedAt(DateUtils.getCurrentDate());
-        toUpdate.setUpdatedBy(sourceType.getUpdatedBy());
+        toUpdate.setUpdatedBy(cohortMemberSource.getUpdatedBy());
 
         return sourceTypeRepository.update(toUpdate);
     }
 
     @Transactional
     public void delete(String uuid) {
-        Optional<SourceType> existing = sourceTypeRepository.findByUuid(uuid);
+        Optional<CohortMemberSource> existing = sourceTypeRepository.findByUuid(uuid);
         existing.ifPresent(sourceTypeRepository::delete);
     }
 }
