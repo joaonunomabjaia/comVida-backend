@@ -70,10 +70,6 @@
             </column>
 
             <column name="description" type="varchar(255)"/>
-
-            <column name="template_file" type="MEDIUMBLOB">
-                <constraints nullable="false"/>
-            </column>
         </createTable>
     </changeSet>
 
@@ -109,8 +105,8 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="04-create-source-types" author="JNMabjaia">
-        <createTable tableName="source_types">
+    <changeSet id="04-create-cohort_member_sources" author="JNMabjaia">
+        <createTable tableName="cohort_member_sources">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -194,19 +190,18 @@
             <column name="username" type="VARCHAR(255)">
                 <constraints nullable="false" unique="true"/>
             </column>
-            <column name="password" type="VARCHAR(255)">
+            <column name="password" type="VARCHAR(500)">
                 <constraints nullable="false"/>
             </column>
             <column name="status" type="VARCHAR(50)"/>
             <column name="should_reset_password" type="BOOLEAN"/>
-            <column name="salt" type="VARCHAR(255)"/>
+            <column name="salt" type="VARCHAR(500)"/>
         </createTable>
     </changeSet>
 
 
-
-    <changeSet id="08-create-eligibility-criteria" author="JNMabjaia">
-        <createTable tableName="eligibility_criteria">
+    <changeSet id="12-create-programs" author="JNMabjaia">
+        <createTable tableName="programs">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
@@ -229,9 +224,91 @@
                 <constraints nullable="false"/>
             </column>
 
-            <column name="criteria" type="varchar(255)"/>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
     </changeSet>
+
+    <changeSet id="13-create-program-activities" author="JNMabjaia">
+        <createTable tableName="program_activities">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="uuid" type="varchar(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+            <column name="created_by" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated_by" type="varchar(50)"/>
+            <column name="updated_at" type="timestamp"/>
+            <column name="life_cycle_status" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="program_id" type="BIGINT"/>
+
+            <column name="service_name" type="varchar(255)"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="program_activities"
+                                 baseColumnNames="program_id"
+                                 constraintName="fk_program_activities_program"
+                                 referencedTableName="programs"
+                                 referencedColumnNames="id"
+                                 onDelete="SET NULL"/>
+
+    </changeSet>
+
+    <changeSet id="comvida-eligibility-criteria-20240528" author="voloide">
+        <createTable tableName="eligibility_criteria">
+            <column name="ID" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="UUID" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+            <column name="CREATED_BY" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="CREATED_AT" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="UPDATED_BY" type="VARCHAR(50)"/>
+            <column name="UPDATED_AT" type="TIMESTAMP"/>
+
+            <column name="LIFE_CYCLE_STATUS" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="CRITERIA" type="VARCHAR(255)"/>
+            <column name="DESCRIPTION" type="VARCHAR(255)"/>
+
+            <column name="PROGRAM_ACTIVITY_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="eligibility_criteria"
+                baseColumnNames="PROGRAM_ACTIVITY_ID"
+                constraintName="fk_eligibility_criteria_program_activity"
+                referencedTableName="program_activities"
+                referencedColumnNames="ID"/>
+    </changeSet>
+
 
     <changeSet id="09-create-cohort-members" author="JNMabjaia">
         <createTable tableName="cohort_members">
@@ -259,7 +336,7 @@
 
             <column name="cohort_id" type="BIGINT"/>
             <column name="patient_id" type="BIGINT"/>
-            <column name="source_type_id" type="BIGINT"/>
+            <column name="source_id" type="BIGINT"/>
             <column name="origin_id" type="varchar(255)"/>
             <column name="inclusion_date" type="date"/>
             <column name="exclusion_date" type="date"/>
@@ -278,11 +355,11 @@
                                  referencedTableName="patients"
                                  onDelete="SET NULL"/>
 
-        <addForeignKeyConstraint baseColumnNames="source_type_id"
+        <addForeignKeyConstraint baseColumnNames="source_id"
                                  baseTableName="cohort_members"
-                                 constraintName="fk_cohort_members_source_type"
+                                 constraintName="fk_cohort_members_source"
                                  referencedColumnNames="id"
-                                 referencedTableName="source_types"
+                                 referencedTableName="cohort_member_sources"
                                  onDelete="SET NULL"/>
 
     </changeSet>
@@ -429,123 +506,110 @@
                                      onDelete="RESTRICT"/>
     </changeSet>
 
-    <changeSet id="12-create-programs" author="JNMabjaia">
-        <createTable tableName="programs">
-            <column name="id" type="BIGINT" autoIncrement="true">
+
+
+    <changeSet id="comvida-groups-20240528" author="voloide">
+        <createTable tableName="groups">
+            <column name="ID" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
 
-            <column name="uuid" type="varchar(50)">
+            <column name="UUID" type="VARCHAR(50)">
                 <constraints nullable="false" unique="true"/>
             </column>
 
-            <column name="created_by" type="varchar(50)">
+            <column name="CREATED_BY" type="VARCHAR(50)">
                 <constraints nullable="false"/>
             </column>
 
-            <column name="created_at" type="timestamp">
+            <column name="CREATED_AT" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
 
-            <column name="updated_by" type="varchar(50)"/>
-            <column name="updated_at" type="timestamp"/>
-            <column name="life_cycle_status" type="varchar(100)">
+            <column name="UPDATED_BY" type="VARCHAR(50)"/>
+            <column name="UPDATED_AT" type="TIMESTAMP"/>
+
+            <column name="LIFE_CYCLE_STATUS" type="VARCHAR(100)">
                 <constraints nullable="false"/>
             </column>
 
-            <column name="name" type="varchar(255)">
+            <column name="NAME" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+            <column name="DESCRIPTION" type="VARCHAR(255)"/>
+
+            <column name="PROGRAM_ACTIVITY_ID" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
         </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="groups"
+                baseColumnNames="PROGRAM_ACTIVITY_ID"
+                constraintName="fk_groups_program_activity"
+                referencedTableName="program_activities"
+                referencedColumnNames="ID"/>
     </changeSet>
 
-    <changeSet id="13-create-program-services" author="JNMabjaia">
-        <createTable tableName="program_services">
-            <column name="id" type="BIGINT" autoIncrement="true">
+    <changeSet id="comvida-user-group-roles-20240528" author="voloide">
+        <createTable tableName="user_group_roles">
+            <column name="ID" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
 
-            <column name="uuid" type="varchar(50)">
+            <column name="UUID" type="VARCHAR(50)">
                 <constraints nullable="false" unique="true"/>
             </column>
 
-            <column name="created_by" type="varchar(50)">
+            <column name="CREATED_BY" type="VARCHAR(50)">
                 <constraints nullable="false"/>
             </column>
 
-            <column name="created_at" type="timestamp">
+            <column name="CREATED_AT" type="TIMESTAMP">
                 <constraints nullable="false"/>
             </column>
 
-            <column name="updated_by" type="varchar(50)"/>
-            <column name="updated_at" type="timestamp"/>
-            <column name="life_cycle_status" type="varchar(100)">
+            <column name="UPDATED_BY" type="VARCHAR(50)"/>
+            <column name="UPDATED_AT" type="TIMESTAMP"/>
+
+            <column name="LIFE_CYCLE_STATUS" type="VARCHAR(100)">
                 <constraints nullable="false"/>
             </column>
 
-            <column name="program_id" type="BIGINT"/>
+            <column name="USER_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
 
-            <column name="service_name" type="varchar(255)"/>
+            <column name="GROUP_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="ROLE_ID" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
 
-            <addForeignKeyConstraint baseTableName="program_services"
-                                     baseColumnNames="program_id"
-                                     constraintName="fk_program_services_program"
-                                     referencedTableName="programs"
-                                     referencedColumnNames="id"
-                                     onDelete="SET NULL"/>
+        <addForeignKeyConstraint
+                baseTableName="user_group_roles"
+                baseColumnNames="USER_ID"
+                constraintName="fk_user_group_roles_user"
+                referencedTableName="users"
+                referencedColumnNames="ID"/>
 
-    </changeSet>
+        <addForeignKeyConstraint
+                baseTableName="user_group_roles"
+                baseColumnNames="GROUP_ID"
+                constraintName="fk_user_group_roles_group"
+                referencedTableName="groups"
+                referencedColumnNames="ID"/>
 
-    <changeSet id="14-create-user-service-roles" author="JNMabjaia">
-        <createTable tableName="user_service_roles">
-            <column name="id" type="BIGINT" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-
-            <column name="uuid" type="varchar(50)">
-                <constraints nullable="false" unique="true"/>
-            </column>
-
-            <column name="created_by" type="varchar(50)">
-                <constraints nullable="false"/>
-            </column>
-
-            <column name="created_at" type="timestamp">
-                <constraints nullable="false"/>
-            </column>
-
-            <column name="updated_by" type="varchar(50)"/>
-            <column name="updated_at" type="timestamp"/>
-            <column name="life_cycle_status" type="varchar(100)">
-                <constraints nullable="false"/>
-            </column>
-
-            <column name="user_id" type="BIGINT"/>
-            <column name="service_id" type="BIGINT"/>
-            <column name="role_id" type="BIGINT"/>
-        </createTable>
-            <addForeignKeyConstraint baseTableName="user_service_roles"
-                                     baseColumnNames="user_id"
-                                     constraintName="fk_usr_srv_roles_user"
-                                     referencedTableName="users"
-                                     referencedColumnNames="id"
-                                     onDelete="SET NULL"/>
-
-            <addForeignKeyConstraint baseTableName="user_service_roles"
-                                     baseColumnNames="service_id"
-                                     constraintName="fk_usr_srv_roles_service"
-                                     referencedTableName="program_services"
-                                     referencedColumnNames="id"
-                                     onDelete="SET NULL"/>
-
-            <addForeignKeyConstraint baseTableName="user_service_roles"
-                                     baseColumnNames="role_id"
-                                     constraintName="fk_usr_srv_roles_role"
-                                     referencedTableName="roles"
-                                     referencedColumnNames="id"
-                                     onDelete="SET NULL"/>
-
+        <addForeignKeyConstraint
+                baseTableName="user_group_roles"
+                baseColumnNames="ROLE_ID"
+                constraintName="fk_user_group_roles_role"
+                referencedTableName="roles"
+                referencedColumnNames="ID"/>
     </changeSet>
 
     <changeSet id="15-create-allocations" author="seu-nome">
@@ -558,7 +622,7 @@
                 <constraints nullable="false"/>
             </column>
 
-            <column name="user_service_role_id" type="BIGINT">
+            <column name="user_group_role_id" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
 
@@ -589,8 +653,8 @@
 
         <addForeignKeyConstraint
                 baseTableName="allocations"
-                baseColumnNames="user_service_role_id"
-                referencedTableName="user_service_roles"
+                baseColumnNames="user_group_role_id"
+                referencedTableName="user_group_roles"
                 referencedColumnNames="id"
                 constraintName="fk_allocations_user_service_role"/>
 
@@ -602,4 +666,225 @@
                 constraintName="fk_allocations_assigned_by_user"/>
     </changeSet>
 
+    <changeSet id="comvida-settings-20240528" author="voloide">
+        <createTable tableName="settings">
+            <column name="ID" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="UUID" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+            <column name="CREATED_BY" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="CREATED_AT" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="UPDATED_BY" type="VARCHAR(50)"/>
+            <column name="UPDATED_AT" type="TIMESTAMP"/>
+
+            <column name="LIFE_CYCLE_STATUS" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+
+            <!-- Campos específicos do Setting -->
+            <column name="DESIGNATION" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="SETTING_VALUE" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="SETTING_TYPE" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="ENABLED" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="DESCRIPTION" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Índice opcional para pesquisa rápida por DESIGNATION -->
+        <createIndex indexName="idx_settings_designation" tableName="settings">
+            <column name="DESIGNATION"/>
+        </createIndex>
+    </changeSet>
+    <changeSet id="add-description-to-roles" author="voloide">
+        <addColumn tableName="roles">
+            <column name="description" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="insert-initial-roles" author="voloide">
+        <insert tableName="roles">
+            <column name="id" valueNumeric="1"/>
+            <column name="uuid" value="11111111-1111-1111-1111-111111111111"/>
+            <column name="name" value="SUPER_ADMIN"/>
+            <column name="description" value="System Super Administrator"/>
+            <column name="created_by" value="system"/>
+            <column name="created_at" valueDate="2024-01-01T00:00:00"/>
+            <column name="life_cycle_status" value="ACTIVE"/>
+        </insert>
+        <insert tableName="roles">
+            <column name="id" valueNumeric="2"/>
+            <column name="uuid" value="22222222-2222-2222-2222-222222222222"/>
+            <column name="name" value="ADMIN"/>
+            <column name="description" value="System Administrator"/>
+            <column name="created_by" value="system"/>
+            <column name="created_at" valueDate="2024-01-01T00:00:00"/>
+            <column name="life_cycle_status" value="ACTIVE"/>
+        </insert>
+        <insert tableName="roles">
+            <column name="id" valueNumeric="3"/>
+            <column name="uuid" value="33333333-3333-3333-3333-333333333333"/>
+            <column name="name" value="PONTO FOCAL"/>
+            <column name="description" value="Focal Point"/>
+            <column name="created_by" value="system"/>
+            <column name="created_at" valueDate="2024-01-01T00:00:00"/>
+            <column name="life_cycle_status" value="ACTIVE"/>
+        </insert>
+        <insert tableName="roles">
+            <column name="id" valueNumeric="4"/>
+            <column name="uuid" value="44444444-4444-4444-4444-444444444444"/>
+            <column name="name" value="VOLUNTARIO"/>
+            <column name="description" value="Volunteer"/>
+            <column name="created_by" value="system"/>
+            <column name="created_at" valueDate="2024-01-01T00:00:00"/>
+            <column name="life_cycle_status" value="ACTIVE"/>
+        </insert>
+    </changeSet>
+    <changeSet id="add-description-to-programs" author="voloide">
+        <addColumn tableName="programs">
+            <column name="description" type="varchar(255)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="insert-initial-programs" author="voloide">
+        <insert tableName="programs">
+            <column name="uuid" value="9f3a1c8e-47b0-4f68-a4ed-5c36c8a9b0ea"/>
+            <column name="name" value="HIV"/>
+            <column name="description" value="HIV Program"/>
+            <column name="created_by" value="system"/>
+            <column name="created_at" valueDate="2024-01-01T00:00:00"/>
+            <column name="life_cycle_status" value="ACTIVE"/>
+        </insert>
+        <insert tableName="programs">
+            <column name="uuid" value="42a5827c-b5c2-40ec-bc8f-1b202948ab8b"/>
+            <column name="name" value="TB"/>
+            <column name="description" value="Tuberculosis Program"/>
+            <column name="created_by" value="system"/>
+            <column name="created_at" valueDate="2024-01-01T00:00:00"/>
+            <column name="life_cycle_status" value="ACTIVE"/>
+        </insert>
+        <insert tableName="programs">
+            <column name="uuid" value="a7164c73-d02b-41b2-b6e5-e3c90d422b30"/>
+            <column name="name" value="Malaria"/>
+            <column name="description" value="Malaria Control Program"/>
+            <column name="created_by" value="system"/>
+            <column name="created_at" valueDate="2024-01-01T00:00:00"/>
+            <column name="life_cycle_status" value="ACTIVE"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="insert-initial-program-activities" author="voloide">
+        <insert tableName="program_activities">
+            <column name="uuid" value="c6e4ef28-65f6-4e24-a8ae-4bcd3143d90e"/>
+            <column name="service_name" value="HomeVisit"/>
+            <column name="program_id" valueComputed="(SELECT id FROM programs WHERE uuid = '9f3a1c8e-47b0-4f68-a4ed-5c36c8a9b0ea')"/>
+            <column name="created_by" value="system"/>
+            <column name="created_at" valueDate="2024-01-01T00:00:00"/>
+            <column name="life_cycle_status" value="ACTIVE"/>
+        </insert>
+        <insert tableName="program_activities">
+            <column name="uuid" value="04d441b5-e839-4a4e-9814-0d8e41f6e6b4"/>
+            <column name="service_name" value="Vaccination"/>
+            <column name="program_id" valueComputed="(SELECT id FROM programs WHERE uuid = '42a5827c-b5c2-40ec-bc8f-1b202948ab8b')"/>
+            <column name="created_by" value="system"/>
+            <column name="created_at" valueDate="2024-01-01T00:00:00"/>
+            <column name="life_cycle_status" value="ACTIVE"/>
+        </insert>
+        <insert tableName="program_activities">
+            <column name="uuid" value="ee60f0a1-c8fd-42e0-a45e-80e80066a1e5"/>
+            <column name="service_name" value="ATS"/>
+            <column name="program_id" valueComputed="(SELECT id FROM programs WHERE uuid = 'a7164c73-d02b-41b2-b6e5-e3c90d422b30')"/>
+            <column name="created_by" value="system"/>
+            <column name="created_at" valueDate="2024-01-01T00:00:00"/>
+            <column name="life_cycle_status" value="ACTIVE"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="insert-initial-groups" author="voloide">
+        <insert tableName="groups">
+            <column name="uuid" value="f1a9b77a-03ef-4bb7-9ec6-62bcbac5a1e1"/>
+            <column name="name" value="Pediatria"/>
+            <column name="description" value="Grupo de Pediatria"/>
+            <column name="program_activity_id" valueComputed="(SELECT id FROM program_activities WHERE uuid = 'c6e4ef28-65f6-4e24-a8ae-4bcd3143d90e')"/>
+            <column name="created_by" value="system"/>
+            <column name="created_at" valueDate="2024-01-01T00:00:00"/>
+            <column name="life_cycle_status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="groups">
+            <column name="uuid" value="e6d0a69e-4fa2-4de0-8a5e-b3a637471e89"/>
+            <column name="name" value="SAAJ"/>
+            <column name="description" value="Serviço de Atendimento aos Adolescentes e Jovens"/>
+            <column name="program_activity_id" valueComputed="(SELECT id FROM program_activities WHERE uuid = '04d441b5-e839-4a4e-9814-0d8e41f6e6b4')"/>
+            <column name="created_by" value="system"/>
+            <column name="created_at" valueDate="2024-01-01T00:00:00"/>
+            <column name="life_cycle_status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="groups">
+            <column name="uuid" value="0f5b8892-7a71-46d1-b8a4-6a37fbd197a4"/>
+            <column name="name" value="SMI"/>
+            <column name="description" value="Saúde Materno Infantil"/>
+            <column name="program_activity_id" valueComputed="(SELECT id FROM program_activities WHERE uuid = 'ee60f0a1-c8fd-42e0-a45e-80e80066a1e5')"/>
+            <column name="created_by" value="system"/>
+            <column name="created_at" valueDate="2024-01-01T00:00:00"/>
+            <column name="life_cycle_status" value="ACTIVE"/>
+        </insert>
+    </changeSet>
+
+
+    <changeSet id="insert-admin-user" author="voloide">
+        <insert tableName="person">
+            <column name="uuid" value="9f318e8e-b12e-4c93-b47c-2b2e7e5f5e2b"/>
+            <column name="names" value='{"firstName":"Admin","lastName":"User"}'/>
+            <column name="sex" value="M"/>
+            <column name="birthdate" valueDate="1990-01-01"/>
+            <column name="address" value='{"addressLine1":"Admin Street","city":"City"}'/>
+            <column name="person_attributes" value='{}'/>
+            <column name="created_by" value="system"/>
+            <column name="created_at" valueDate="2024-01-01T00:00:00"/>
+            <column name="life_cycle_status" value="ACTIVE"/>
+        </insert>
+        <!-- Insert User -->
+        <insert tableName="users">
+            <column name="id" valueComputed="(SELECT id FROM person WHERE uuid = '9f318e8e-b12e-4c93-b47c-2b2e7e5f5e2b')"/>
+            <column name="username" value="admin"/>
+            <column name="password" value="e7c3a98f5cfb8b1a2b75c7a3f8b9d90b1dc5f7b933e37b9b2a5087f44419d780"/>
+            <column name="salt" value="c593bd29ae4f42d4961a6bfae86c9243"/>
+            <column name="status" value="ACTIVE"/>
+            <column name="should_reset_password" valueBoolean="true"/>
+        </insert>
+
+        <insert tableName="user_group_roles">
+            <column name="uuid" value="28acde94-183c-43bb-9bfb-09a0c390e07e"/>
+            <column name="user_id" valueComputed="(SELECT id FROM users WHERE username = 'admin')"/>
+            <column name="role_id" valueComputed="(SELECT id FROM roles WHERE uuid = '11111111-1111-1111-1111-111111111111')"/>
+            <column name="group_id" valueComputed="(SELECT id FROM groups WHERE name = 'SMI')"/>
+            <column name="created_by" value="system"/>
+            <column name="created_at" valueDate="2024-01-01T00:00:00"/>
+            <column name="life_cycle_status" value="ACTIVE"/>
+        </insert>
+    </changeSet>
 </databaseChangeLog>

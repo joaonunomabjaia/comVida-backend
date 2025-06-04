@@ -1,6 +1,8 @@
 package mz.org.csaude.comvida.backend.repository;
 
 import io.micronaut.data.annotation.Repository;
+import io.micronaut.data.model.Page;
+import io.micronaut.data.model.Pageable;
 import io.micronaut.data.repository.CrudRepository;
 import jakarta.validation.constraints.NotNull;
 import mz.org.csaude.comvida.backend.entity.Cohort;
@@ -19,4 +21,9 @@ public interface CohortRepository extends CrudRepository<Cohort, Long> {
     Optional<Cohort> findByName(String name);
 
     Optional<Cohort> findByUuid(String uuid);
+
+    Page<Cohort> findByNameIlike(String name, Pageable pageable);
+    
+    Page<Cohort> findByProgramActivityId(Long programActivityId, Pageable pageable);
+
 }

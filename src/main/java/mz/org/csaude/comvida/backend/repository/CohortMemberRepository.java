@@ -20,7 +20,7 @@ public interface CohortMemberRepository extends CrudRepository<CohortMember, Lon
 
     List<CohortMember> findByPatientId(Long patientId);
 
-    List<CohortMember> findBySourceTypeId(Long sourceTypeId);
+    //List<CohortMember> findBySourceTypeId(Long sourceTypeId);
 
     Optional<CohortMember> findByOriginId(String originId);
 

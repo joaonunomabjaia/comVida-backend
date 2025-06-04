@@ -5,9 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 import mz.org.csaude.comvida.backend.base.BaseEntityDTO;
 import mz.org.csaude.comvida.backend.entity.CohortMember;
-import mz.org.csaude.comvida.backend.entity.Cohort;
-import mz.org.csaude.comvida.backend.entity.Patient;
-import mz.org.csaude.comvida.backend.entity.SourceType;
 
 import java.util.Date;
 
@@ -31,7 +28,7 @@ public class CohortMemberDTO extends BaseEntityDTO {
         this.uuid = member.getUuid();
         this.cohort = member.getCohort() != null ? new CohortDTO(member.getCohort()) : null;
         this.patient = member.getPatient() != null ? new PatientDTO(member.getPatient()) : null;
-        this.sourceType = member.getSourceType() != null ? new SourceTypeDTO(member.getSourceType()) : null;
+        this.sourceType = member.getCohortMemberSource() != null ? new SourceTypeDTO(member.getCohortMemberSource()) : null;
         this.originId = member.getOriginId();
         this.inclusionDate = member.getInclusionDate();
         this.exclusionDate = member.getExclusionDate();

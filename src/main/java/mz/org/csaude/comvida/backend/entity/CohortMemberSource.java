@@ -9,7 +9,7 @@ import mz.org.csaude.comvida.backend.base.BaseEntity;
 @Entity
 @Getter
 @Setter
-@Table(name = "source_types")
-public class SourceType extends BaseEntity {
+@Table(name = "cohort_member_sources")
+public class CohortMemberSource extends BaseEntity {
     private String name;
 }

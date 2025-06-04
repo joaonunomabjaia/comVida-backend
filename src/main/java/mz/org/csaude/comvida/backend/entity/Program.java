@@ -15,5 +15,9 @@ public class Program extends BaseEntity {
 
     @Column(nullable = false)
     private String name;
+
+    @Column(length = 255)
+    private String description;
+
 }
 

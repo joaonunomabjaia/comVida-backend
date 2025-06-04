@@ -4,7 +4,7 @@ import io.micronaut.serde.annotation.Serdeable;
 import lombok.Getter;
 import lombok.Setter;
 import mz.org.csaude.comvida.backend.base.BaseEntityDTO;
-import mz.org.csaude.comvida.backend.entity.SourceType;
+import mz.org.csaude.comvida.backend.entity.CohortMemberSource;
 
 @Getter
 @Setter
@@ -16,8 +16,8 @@ public class SourceTypeDTO extends BaseEntityDTO {
 
     public SourceTypeDTO() {}
 
-    public SourceTypeDTO(SourceType sourceType) {
-        this.uuid = sourceType.getUuid();
-        this.name = sourceType.getName();
+    public SourceTypeDTO(CohortMemberSource cohortMemberSource) {
+        this.uuid = cohortMemberSource.getUuid();
+        this.name = cohortMemberSource.getName();
     }
 }

@@ -23,7 +23,7 @@ public class CohortMember extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "source_type_id")
-    private SourceType sourceType;
+    private CohortMemberSource cohortMemberSource;
 
     private String originId;
 

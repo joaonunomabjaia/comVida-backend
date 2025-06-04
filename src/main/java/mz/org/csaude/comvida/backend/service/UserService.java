@@ -68,4 +68,8 @@ public class UserService extends BaseService {
         Optional<User> existing = userRepository.findByUuid(uuid);
         existing.ifPresent(userRepository::delete);
     }
+
+    public Optional<User> getByUserName(String identity) {
+        return userRepository.findByUsername(identity);
+    }
 }

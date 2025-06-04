@@ -8,12 +8,13 @@ import mz.org.csaude.comvida.backend.base.BaseEntity;
 @Entity
 @Getter
 @Setter
-@Table(name = "cohorts")
-public class Cohort extends BaseEntity {
+@Table(name = "groups")
+public class Group extends BaseEntity {
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
 
+    @Column(length = 255)
     private String description;
 
     @ManyToOne(optional = false)
