@@ -42,19 +42,12 @@ micronaut:
           secret:
             generator:
               secret: ${JWT_GENERATOR_SIGNATURE_SECRET:pleaseChangeThisSecretForANewOne}
-#tag::security[]
----
-#tag::refresh[]
-micronaut:
-  security:
-    token:
-      jwt:
         generator:
-          refresh-token:
-            secret:${JWT_GENERATOR_SIGNATURE_SECRET:pleaseChangeThisSecretForANewOne}
           access-token:
-            expiration: 900000
-            #end::refresh[]
+            expiration: 900 # 15 minutes
+          refresh-token:
+            enabled: true
+            expiration: 604800 # 7 days
 
     jms:
       activemq:
@@ -110,3 +103,6 @@ jackson:
   serialization:
     writeDatesAsTimestamps: false
     writeDatesWithZoneId: true
+logger:
+  levels:
+    io.micronaut.serde: DEBUG

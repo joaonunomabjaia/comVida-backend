@@ -4,6 +4,7 @@ import io.micronaut.data.annotation.Repository;
 import io.micronaut.data.jpa.repository.JpaRepository;
 import io.micronaut.data.model.Page;
 import io.micronaut.data.model.Pageable;
+import mz.org.csaude.comvida.backend.entity.Program;
 import mz.org.csaude.comvida.backend.entity.ProgramActivity;
 
 import java.util.Optional;
@@ -13,4 +14,6 @@ public interface ProgramActivityRepository extends JpaRepository<ProgramActivity
     Optional<ProgramActivity> findByUuid(String uuid);
 
     Page<ProgramActivity> findByNameIlike(String name, Pageable pageable);
+
+    long countByProgram(Program program);
 }
