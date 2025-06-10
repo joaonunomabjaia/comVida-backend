@@ -3,6 +3,30 @@ micronaut:
     name: comvida
   server:
     port: 8097
+    context-path: /api
+    cors:
+      enabled: true
+      configurations:
+        mycors:
+          allowed-origins: ${ALLOWED_ORIGINS}
+          allowed-methods:
+            - GET
+            - POST
+            - PATCH
+            - PUT
+            - DELETE
+            - OPTIONS
+            - PUT
+            - HEAD
+          allowed-headers:
+            - Content-Type
+            - Authorization
+          exposed-headers:
+            - Location
+            - Content-Disposition
+          max-age: 1800
+          allow-credentials: true
+
   security:
     intercept-url-map:
       - access: isAnonymous()

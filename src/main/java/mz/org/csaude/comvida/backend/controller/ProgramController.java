@@ -18,6 +18,7 @@ import mz.org.csaude.comvida.backend.dto.ProgramDTO;
 import mz.org.csaude.comvida.backend.entity.Program;
 import mz.org.csaude.comvida.backend.error.ComVidaAPIError;
 import mz.org.csaude.comvida.backend.service.ProgramService;
+import mz.org.csaude.comvida.backend.util.Utilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,12 +34,14 @@ public class ProgramController extends BaseController {
     @Inject
     private ProgramService programService;
 
+    @Secured(SecurityRule.IS_ANONYMOUS)
     @Operation(summary = "List or search programs by name (paginated)")
     @Get
-    public HttpResponse<?> listOrSearch(@QueryValue("name") String name,
+    public HttpResponse<?> listOrSearch(@Nullable @QueryValue("name") String name,
                                         @Nullable Pageable pageable) {
+        LOG.info("listOrSearch");
         try {
-            Page<Program> programs = name.isBlank()
+            Page<Program> programs = !Utilities.stringHasValue(name)
                     ? programService.findAll(resolvePageable(pageable))
                     : programService.searchByName(name, resolvePageable(pageable));
 
