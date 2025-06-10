@@ -1,6 +1,7 @@
 package mz.org.csaude.comvida.backend.base;
 
 import io.micronaut.core.annotation.Introspected;
+import io.micronaut.serde.annotation.Serdeable;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,6 +20,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @MappedSuperclass
 @Introspected // Enables Micronaut's reflection-free serialization/deserialization
+@Serdeable.Deserializable
 public abstract class BaseEntity implements RestAPIResponse, Serializable, Comparable<BaseEntity> {
 
     @Id

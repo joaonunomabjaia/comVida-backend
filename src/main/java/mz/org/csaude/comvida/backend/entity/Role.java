@@ -1,5 +1,6 @@
 package mz.org.csaude.comvida.backend.entity;
 
+import io.micronaut.serde.annotation.Serdeable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -10,6 +11,7 @@ import mz.org.csaude.comvida.backend.base.BaseEntity;
 @Entity
 @Getter
 @Setter
+@Serdeable.Deserializable
 @Table(name = "roles")
 public class Role extends BaseEntity {
 

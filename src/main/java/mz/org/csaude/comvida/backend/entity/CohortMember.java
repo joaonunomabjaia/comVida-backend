@@ -1,5 +1,6 @@
 package mz.org.csaude.comvida.backend.entity;
 
+import io.micronaut.serde.annotation.Serdeable;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,6 +11,7 @@ import java.util.Date;
 @Entity
 @Getter
 @Setter
+@Serdeable.Deserializable
 @Table(name = "cohort_members")
 public class CohortMember extends BaseEntity {
 

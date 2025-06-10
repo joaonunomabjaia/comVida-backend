@@ -1,5 +1,6 @@
 package mz.org.csaude.comvida.backend.entity;
 
+import io.micronaut.serde.annotation.Serdeable;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +12,7 @@ import java.util.Date;
 @Inheritance(strategy = InheritanceType.JOINED)
 @Getter
 @Setter
+@Serdeable.Deserializable
 public class Person extends BaseEntity {
 
     @Column(columnDefinition = "json")

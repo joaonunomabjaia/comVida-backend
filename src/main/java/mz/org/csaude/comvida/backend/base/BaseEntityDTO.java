@@ -1,6 +1,8 @@
 package mz.org.csaude.comvida.backend.base;
 
 import io.micronaut.core.annotation.Creator;
+import io.micronaut.core.annotation.Introspected;
+import io.micronaut.serde.annotation.Serdeable;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import mz.org.csaude.comvida.backend.api.RestAPIResponse;
@@ -9,6 +11,9 @@ import mz.org.csaude.comvida.backend.base.BaseEntity;
 import java.io.Serializable;
 import java.util.Date;
 
+
+@Serdeable
+@Introspected
 @Data
 @AllArgsConstructor
 public class BaseEntityDTO implements Serializable, RestAPIResponse {

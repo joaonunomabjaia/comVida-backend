@@ -93,4 +93,5 @@ public class ComVidaAuthenticationProvider implements ReactiveAuthenticationProv
         return 0; // prioridade padrão
     }
 
+
 }

@@ -1,5 +1,6 @@
 package mz.org.csaude.comvida.backend.entity;
 
+import io.micronaut.serde.annotation.Serdeable;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -9,6 +10,7 @@ import mz.org.csaude.comvida.backend.entity.Person;
 @Table(name = "patients")
 @Getter
 @Setter
+@Serdeable.Deserializable
 public class Patient extends Person {
 
     @Column(name = "patient_identifier", columnDefinition = "json")

@@ -1,5 +1,6 @@
 package mz.org.csaude.comvida.backend.dto;
 
+import io.micronaut.serde.annotation.Serdeable;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -12,6 +13,7 @@ import mz.org.csaude.comvida.backend.entity.Setting;
 @Getter
 @Setter
 @NoArgsConstructor
+@Serdeable
 @Schema(name = "SettingDTO", description = "DTO representing a system setting")
 public class SettingDTO extends BaseEntityDTO {
 

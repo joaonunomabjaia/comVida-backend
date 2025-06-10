@@ -1,6 +1,7 @@
 package mz.org.csaude.comvida.backend.dto;
 
 import io.micronaut.core.annotation.Introspected;
+import io.micronaut.serde.annotation.Serdeable;
 import lombok.*;
 import mz.org.csaude.comvida.backend.base.BaseEntityDTO;
 import mz.org.csaude.comvida.backend.entity.UserGroupRole;
@@ -11,6 +12,7 @@ import mz.org.csaude.comvida.backend.entity.UserGroupRole;
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @ToString
+@Serdeable
 public class UserGroupRoleDTO extends BaseEntityDTO {
 
     private UserDTO user;
