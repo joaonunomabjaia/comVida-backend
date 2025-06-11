@@ -5,6 +5,7 @@ import io.micronaut.data.jpa.repository.JpaRepository;
 import io.micronaut.data.model.Page;
 import io.micronaut.data.model.Pageable;
 import mz.org.csaude.comvida.backend.entity.Group;
+import mz.org.csaude.comvida.backend.entity.ProgramActivity;
 
 import java.util.Optional;
 
@@ -12,4 +13,6 @@ import java.util.Optional;
 public interface GroupRepository extends JpaRepository<Group, Long> {
     Optional<Group> findByUuid(String uuid);
     Page<Group> findByNameIlike(String name, Pageable pageable);
+
+    long countByProgramActivity(ProgramActivity programActivity);
 }

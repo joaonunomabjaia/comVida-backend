@@ -16,7 +16,7 @@ import java.util.Date;
 @Introspected
 @Data
 @AllArgsConstructor
-public class BaseEntityDTO implements Serializable, RestAPIResponse {
+public abstract class BaseEntityDTO implements Serializable, RestAPIResponse {
 
     private Long id;
 
@@ -47,4 +47,7 @@ public class BaseEntityDTO implements Serializable, RestAPIResponse {
         this.setCreatedBy(baseEntity.getCreatedBy());
         this.setUpdatedBy(baseEntity.getUpdatedBy());
     }
+
+    public abstract BaseEntity toEntity();
+
 }

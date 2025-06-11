@@ -13,7 +13,7 @@ import mz.org.csaude.comvida.backend.base.BaseEntity;
 @Table(name = "program_activities")
 public class ProgramActivity extends BaseEntity {
 
-    @Column(nullable = false)
+    @Column(nullable = false, name = "service_name")
     private String name;
 
     @ManyToOne(optional = false)

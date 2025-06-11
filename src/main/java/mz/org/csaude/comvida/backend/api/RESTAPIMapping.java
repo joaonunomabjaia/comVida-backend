@@ -14,4 +14,8 @@ public class RESTAPIMapping {
     public static final String PATIENT_IMPORT_CONTROLLER = "patient-imports";
     public static final String PROGRAM_SERVICE_CONTROLLER = "program-services";
     public static final String USER_SERVICE_ROLE_CONTROLLER = "user-service-roles";
+    public static final String PROGRAM_ACTIVITY_CONTROLLER = "/program-activities";
+    public static final String GROUP_CONTROLLER = "/groups";
+
+
 }

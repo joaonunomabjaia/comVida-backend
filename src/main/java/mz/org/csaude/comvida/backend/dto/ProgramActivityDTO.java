@@ -1,5 +1,6 @@
 package mz.org.csaude.comvida.backend.dto;
 
+import io.micronaut.core.annotation.Creator;
 import io.micronaut.serde.annotation.Serdeable;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,12 +10,15 @@ import mz.org.csaude.comvida.backend.entity.ProgramActivity;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @Serdeable
 public class ProgramActivityDTO extends BaseEntityDTO {
 
     private String name;
     private ProgramDTO program;
+
+    @Creator
+    public ProgramActivityDTO() {
+    }
 
     public ProgramActivityDTO(ProgramActivity activity) {
         super(activity);
