@@ -3,6 +3,7 @@ package mz.org.csaude.comvida.backend.dto;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.serde.annotation.Serdeable;
 import lombok.*;
+import mz.org.csaude.comvida.backend.base.BaseEntity;
 import mz.org.csaude.comvida.backend.base.BaseEntityDTO;
 import mz.org.csaude.comvida.backend.entity.UserGroupRole;
 
@@ -30,5 +31,10 @@ public class UserGroupRoleDTO extends BaseEntityDTO {
         if (entity.getRole() != null) {
             this.role = new RoleDTO(entity.getRole());
         }
+    }
+
+    @Override
+    public BaseEntity toEntity() {
+        return null;
     }
 }

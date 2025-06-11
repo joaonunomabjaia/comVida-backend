@@ -3,6 +3,7 @@ package mz.org.csaude.comvida.backend.dto;
 import io.micronaut.serde.annotation.Serdeable;
 import lombok.Getter;
 import lombok.Setter;
+import mz.org.csaude.comvida.backend.base.BaseEntity;
 import mz.org.csaude.comvida.backend.base.BaseEntityDTO;
 import mz.org.csaude.comvida.backend.entity.Allocation;
 import mz.org.csaude.comvida.backend.entity.UserGroupRole;
@@ -33,5 +34,10 @@ public class AllocationDTO extends BaseEntityDTO {
         this.allocationDate = allocation.getAllocationDate();
         this.form = allocation.getForm();
         this.status = allocation.getStatus();
+    }
+
+    @Override
+    public BaseEntity toEntity() {
+        return null;
     }
 }

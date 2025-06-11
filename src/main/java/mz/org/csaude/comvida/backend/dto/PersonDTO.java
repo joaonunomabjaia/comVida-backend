@@ -3,6 +3,7 @@ package mz.org.csaude.comvida.backend.dto;
 import io.micronaut.serde.annotation.Serdeable;
 import lombok.Getter;
 import lombok.Setter;
+import mz.org.csaude.comvida.backend.base.BaseEntity;
 import mz.org.csaude.comvida.backend.base.BaseEntityDTO;
 import mz.org.csaude.comvida.backend.entity.Person;
 
@@ -29,5 +30,10 @@ public class PersonDTO extends BaseEntityDTO {
         this.birthdate = person.getBirthdate();
         this.address = person.getAddress();
         this.personAttributes = person.getPersonAttributes();
+    }
+
+    @Override
+    public BaseEntity toEntity() {
+        return null;
     }
 }

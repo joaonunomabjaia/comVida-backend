@@ -3,6 +3,7 @@ package mz.org.csaude.comvida.backend.dto;
 import io.micronaut.serde.annotation.Serdeable;
 import lombok.Getter;
 import lombok.Setter;
+import mz.org.csaude.comvida.backend.base.BaseEntity;
 import mz.org.csaude.comvida.backend.base.BaseEntityDTO;
 import mz.org.csaude.comvida.backend.entity.User;
 
@@ -42,4 +43,11 @@ public class UserDTO extends BaseEntityDTO {
         this.shouldResetPassword = user.getShouldResetPassword();
         this.salt = user.getSalt();
     }
+
+    @Override
+    public BaseEntity toEntity() {
+        return null;
+    }
 }
+
+

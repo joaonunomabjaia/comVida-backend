@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import mz.org.csaude.comvida.backend.base.BaseEntity;
 import mz.org.csaude.comvida.backend.base.BaseEntityDTO;
 import mz.org.csaude.comvida.backend.entity.Setting;
 
@@ -39,5 +40,10 @@ public class SettingDTO extends BaseEntityDTO {
         this.type = setting.getType();
         this.enabled = setting.getEnabled();
         this.description = setting.getDescription();
+    }
+
+    @Override
+    public Setting toEntity() {
+        return null;
     }
 }

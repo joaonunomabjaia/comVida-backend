@@ -3,6 +3,7 @@ package mz.org.csaude.comvida.backend.dto;
 import io.micronaut.serde.annotation.Serdeable;
 import lombok.Getter;
 import lombok.Setter;
+import mz.org.csaude.comvida.backend.base.BaseEntity;
 import mz.org.csaude.comvida.backend.base.BaseEntityDTO;
 import mz.org.csaude.comvida.backend.entity.CohortMember;
 
@@ -33,5 +34,10 @@ public class CohortMemberDTO extends BaseEntityDTO {
         this.inclusionDate = member.getInclusionDate();
         this.exclusionDate = member.getExclusionDate();
         // Herda de BaseEntityDTO: setCreatedAt(), setUpdatedAt(), etc., se houver
+    }
+
+    @Override
+    public BaseEntity toEntity() {
+        return null;
     }
 }
