@@ -38,7 +38,6 @@ public class ProgramController extends BaseController {
     @Inject
     private ProgramService programService;
 
-    @Secured(SecurityRule.IS_ANONYMOUS)
     @Operation(summary = "List or search programs by name (paginated)")
     @Get
     public HttpResponse<?> listOrSearch(@Nullable @QueryValue("name") String name,

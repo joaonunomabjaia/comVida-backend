@@ -4,96 +4,107 @@ import io.micronaut.core.annotation.Nullable;
 import io.micronaut.data.model.Page;
 import io.micronaut.data.model.Pageable;
 import io.micronaut.http.HttpResponse;
-import io.micronaut.http.HttpStatus;
 import io.micronaut.http.annotation.*;
 import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.rules.SecurityRule;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.inject.Inject;
+import mz.org.csaude.comvida.backend.api.RESTAPIMapping;
+import mz.org.csaude.comvida.backend.api.response.PaginatedResponse;
+import mz.org.csaude.comvida.backend.api.response.SuccessResponse;
 import mz.org.csaude.comvida.backend.base.BaseController;
+import mz.org.csaude.comvida.backend.dto.LifeCycleStatusDTO;
 import mz.org.csaude.comvida.backend.dto.ProgramActivityDTO;
 import mz.org.csaude.comvida.backend.entity.ProgramActivity;
-import mz.org.csaude.comvida.backend.error.ComVidaAPIError;
 import mz.org.csaude.comvida.backend.service.ProgramActivityService;
+import mz.org.csaude.comvida.backend.util.Utilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Secured(SecurityRule.IS_AUTHENTICATED)
-@Controller("/api/program-activities")
+@Controller(RESTAPIMapping.PROGRAM_ACTIVITY_CONTROLLER)
 @Tag(name = "ProgramActivity", description = "API for managing program activities")
 public class ProgramActivityController extends BaseController {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProgramActivityController.class);
 
     @Inject
-    private ProgramActivityService service;
+    private ProgramActivityService programActivityService;
 
     @Operation(summary = "List or search program activities by name (paginated)")
     @Get
-    public HttpResponse<?> listOrSearch(@QueryValue("name") String name,
+    public HttpResponse<?> listOrSearch(@Nullable @QueryValue("name") String name,
                                         @Nullable Pageable pageable) {
-        try {
-            Page<ProgramActivity> result = name.isBlank()
-                    ? service.findAll(resolvePageable(pageable))
-                    : service.searchByName(name, resolvePageable(pageable));
+        LOG.info("listOrSearch");
 
-            return HttpResponse.ok(result.map(ProgramActivityDTO::new));
-        } catch (Exception e) {
-            LOG.error("Error listing/searching activities: {}", e.getMessage(), e);
-            return buildErrorResponse(e);
-        }
+        Page<ProgramActivity> programActivities = !Utilities.stringHasValue(name)
+                ? programActivityService.findAll(resolvePageable(pageable))
+                : programActivityService.searchByName(name, resolvePageable(pageable));
+
+        List<ProgramActivityDTO> activityDTOs = programActivities.getContent().stream()
+                .map(ProgramActivityDTO::new)
+                .collect(Collectors.toList());
+
+        String message = programActivities.getTotalSize() == 0
+                ? "Sem Dados para esta pesquisa"
+                : "Dados encontrados";
+
+        return HttpResponse.ok(
+                PaginatedResponse.of(
+                        activityDTOs,
+                        programActivities.getTotalSize(),
+                        programActivities.getPageable(),
+                        message
+                )
+        );
     }
 
     @Operation(summary = "Get program activity by ID")
     @Get("/{id}")
     public HttpResponse<?> findById(@PathVariable Long id) {
-        try {
-            Optional<ProgramActivity> activity = service.findById(id);
-            return activity.map(value -> HttpResponse.ok(new ProgramActivityDTO(value)))
-                           .orElse(HttpResponse.notFound());
-        } catch (Exception e) {
-            LOG.error("Error fetching activity by ID: {}", e.getMessage(), e);
-            return buildErrorResponse(e);
-        }
+        Optional<ProgramActivity> optional = programActivityService.findById(id);
+        return optional.map(activity ->
+                HttpResponse.ok(SuccessResponse.of("Atividade encontrada com sucesso", new ProgramActivityDTO(activity)))
+        ).orElse(HttpResponse.notFound());
     }
 
     @Operation(summary = "Create a new program activity")
     @Post
-    public HttpResponse<?> create(@Body ProgramActivityDTO dto) {
-        try {
-            ProgramActivity created = service.create(dto.toEntity());
-            return HttpResponse.created(new ProgramActivityDTO(created));
-        } catch (Exception e) {
-            LOG.error("Error creating activity: {}", e.getMessage(), e);
-            return buildErrorResponse(e);
-        }
+    public HttpResponse<?> create(@Body ProgramActivityDTO dto, Authentication authentication) {
+        String userUuid = (String) authentication.getAttributes().get("userUuid");
+        ProgramActivity activity = dto.toEntity();
+        activity.setCreatedBy(userUuid);
+        ProgramActivity created = programActivityService.create(activity);
+        return HttpResponse.created(SuccessResponse.of("Atividade criada com sucesso", new ProgramActivityDTO(created)));
     }
 
     @Operation(summary = "Update an existing program activity")
     @Put
-    public HttpResponse<?> update(@Body ProgramActivityDTO dto) {
-        try {
-            ProgramActivity updated = service.update(dto.toEntity());
-            return HttpResponse.ok(new ProgramActivityDTO(updated));
-        } catch (Exception e) {
-            LOG.error("Error updating activity: {}", e.getMessage(), e);
-            return buildErrorResponse(e);
-        }
+    public HttpResponse<?> update(@Body ProgramActivityDTO dto, Authentication authentication) {
+        String userUuid = (String) authentication.getAttributes().get("userUuid");
+        ProgramActivity activity = dto.toEntity();
+        activity.setUpdatedBy(userUuid);
+        ProgramActivity updated = programActivityService.update(activity);
+        return HttpResponse.ok(SuccessResponse.of("Atividade atualizada com sucesso", new ProgramActivityDTO(updated)));
     }
 
     @Operation(summary = "Delete a program activity by UUID")
     @Delete("/{uuid}")
     public HttpResponse<?> delete(@PathVariable String uuid) {
-        try {
-            service.delete(uuid);
-            return HttpResponse.noContent();
-        } catch (Exception e) {
-            LOG.error("Error deleting activity: {}", e.getMessage(), e);
-            return buildErrorResponse(e);
-        }
+        programActivityService.delete(uuid);
+        return HttpResponse.ok(SuccessResponse.messageOnly("Atividade eliminada com sucesso"));
     }
 
+    @Operation(summary = "Activate or deactivate a program activity by changing its LifeCycleStatus")
+    @Put("/{uuid}/status")
+    public HttpResponse<?> updateLifeCycleStatus(@PathVariable String uuid, @Body LifeCycleStatusDTO dto) {
+        ProgramActivity updatedActivity = programActivityService.updateLifeCycleStatus(uuid, dto.getLifeCycleStatus());
+        return HttpResponse.ok(SuccessResponse.of("Estado da atividade atualizado com sucesso", new ProgramActivityDTO(updatedActivity)));
+    }
 }
