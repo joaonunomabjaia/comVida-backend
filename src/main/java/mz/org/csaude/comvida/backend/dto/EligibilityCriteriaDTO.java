@@ -3,6 +3,7 @@ package mz.org.csaude.comvida.backend.dto;
 import io.micronaut.serde.annotation.Serdeable;
 import lombok.Getter;
 import lombok.Setter;
+import mz.org.csaude.comvida.backend.base.BaseEntity;
 import mz.org.csaude.comvida.backend.base.BaseEntityDTO;
 import mz.org.csaude.comvida.backend.entity.EligibilityCriteria;
 
@@ -19,5 +20,10 @@ public class EligibilityCriteriaDTO extends BaseEntityDTO {
     public EligibilityCriteriaDTO(EligibilityCriteria eligibilityCriteria) {
         this.uuid = eligibilityCriteria.getUuid();
         this.criteria = eligibilityCriteria.getCriteria();
+    }
+
+    @Override
+    public BaseEntity toEntity() {
+        return null;
     }
 }
