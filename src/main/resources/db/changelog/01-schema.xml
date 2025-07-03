@@ -435,7 +435,7 @@
                 <constraints nullable="false"/>
             </column>
 
-            <column name="file" type="mediumblob">
+            <column name="file" type="BYTEA" >
                 <constraints nullable="false"/>
             </column>
 
@@ -443,12 +443,27 @@
                 <constraints nullable="false"/>
             </column>
 
+            <column name="source_system" type="varchar(100)" />
+
             <column name="progress" type="int" defaultValueNumeric="0">
                 <constraints nullable="false"/>
             </column>
 
             <column name="message" type="varchar(500)"/>
+
+            <column name="program_activity_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
+
+        <!-- Foreign key for program_activity_id -->
+        <addForeignKeyConstraint
+                baseTableName="patient_import_files"
+                baseColumnNames="program_activity_id"
+                constraintName="fk_patient_import_file_program_activity"
+                referencedTableName="program_activities"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
     </changeSet>
 
     <changeSet id="14-create-patient-import-configurations" author="JNMabjaia">
@@ -871,8 +886,8 @@
         <insert tableName="users">
             <column name="id" valueComputed="(SELECT id FROM person WHERE uuid = '9f318e8e-b12e-4c93-b47c-2b2e7e5f5e2b')"/>
             <column name="username" value="admin"/>
-            <column name="password" value="e7c3a98f5cfb8b1a2b75c7a3f8b9d90b1dc5f7b933e37b9b2a5087f44419d780"/>
-            <column name="salt" value="c593bd29ae4f42d4961a6bfae86c9243"/>
+            <column name="password" value="i9bA+VLUmrcfpFTqA932Ale+sw5gRLYyHVa2Th4hbVU="/>
+            <column name="salt" value="379c69f2-4bca-11ee-9e75-0242ac150002"/>
             <column name="status" value="ACTIVE"/>
             <column name="should_reset_password" valueBoolean="true"/>
         </insert>
@@ -887,4 +902,39 @@
             <column name="life_cycle_status" value="ACTIVE"/>
         </insert>
     </changeSet>
+
+    <changeSet id="add-column-program_activity_id" author="JNMabjaia">
+    <addColumn tableName="cohorts">
+        <column name="program_activity_id" type="BIGINT" defaultValueNumeric="1">
+            <constraints nullable="false"/>
+        </column>
+    </addColumn>
+
+    <addForeignKeyConstraint
+            baseTableName="cohorts"
+            baseColumnNames="program_activity_id"
+            referencedTableName="program_activities"
+            referencedColumnNames="id"
+            constraintName="fk_cohort_program_activity"/>
+    </changeSet>
+
+    <changeSet id="add-source-type-to-cohort-members" author="JNMabjaia">
+        <!-- Adiciona a coluna com valor default 1 (remova o default se não quiser) -->
+        <addColumn tableName="cohort_members">
+            <column name="source_type_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <!-- Adiciona a chave estrangeira -->
+        <addForeignKeyConstraint
+                baseTableName="cohort_members"
+                baseColumnNames="source_type_id"
+                referencedTableName="cohort_member_sources"
+                referencedColumnNames="id"
+                constraintName="fk_cohort_member_source_type"/>
+    </changeSet>
+
+
+    
 </databaseChangeLog>
