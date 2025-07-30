@@ -140,91 +140,12 @@ public class PatientImportFileService {
         }
     }
 
-
-//    public void processFile(PatientImportFile file) throws IOException {
-//        try (InputStream input = new ByteArrayInputStream(file.getFile());
-//             Workbook workbook = new XSSFWorkbook(input)) {
-//
-//            Sheet sheet = workbook.getSheetAt(0);
-//
-//            for (Row row : sheet) {
-//                if (row.getRowNum() == 0) continue;
-//
-//                String patientUUID = row.getCell(3).getStringCellValue(); // Pega o NID do paciente
-//                String cohortDescription = row.getSheet().getSheetName();
-////                Date inclusionDate = row.getCell(5).getDateCellValue();
-//
-//                cohortMemberService.createFromExcel(patientUUID, cohortDescription, file.getSourceSystem());
-//            }
-//        }
-//    }
-
-//    public void processFile(PatientImportFile file) throws IOException {
-//        try (InputStream input = new ByteArrayInputStream(file.getFile());
-//             Workbook workbook = new XSSFWorkbook(input)) {
-//
-//            int totalSheets = workbook.getNumberOfSheets();
-//            file.setStatus(PatientImportFile.ImportStatus.PROCESSING);
-//            file.setMessage("Processamento iniciado.");
-//            file.setProgress(0);
-//            patientImportFileRepository.update(file);
-//
-//            int sheetIndex = 0;
-//            for (Sheet sheet : workbook) {
-//                String cohortDescription = sheet.getSheetName();
-//                int totalRows = sheet.getLastRowNum();
-//                int processed = 0;
-//                int batchSize = Integer.parseInt(settingService.getSetting("BATCH_SIZE").getValue());
-//
-//
-//                for (int rowIndex = 1; rowIndex <= totalRows; rowIndex += batchSize) {
-//                    int end = Math.min(rowIndex + batchSize - 1, totalRows);
-//
-//                    for (int i = rowIndex; i <= end; i++) {
-//                        Row row = sheet.getRow(i);
-//                        if (row == null) continue;
-//
-//                        try {
-//                            String patientUUID = row.getCell(3).getStringCellValue();
-//                            cohortMemberService.createFromExcel(patientUUID, cohortDescription, file.getSourceSystem());
-//                        } catch (Exception e) {
-//                            System.err.println("Erro ao processar linha " + i + " da sheet " + sheet.getSheetName() + ": " + e.getMessage());
-//                        }
-//                    }
-//
-//                    processed = end;
-//                    int totalProgressUnits = totalSheets * 100; // 100 por sheet
-//                    int currentSheetProgress = (processed * 100) / totalRows;
-//                    int globalProgress = ((sheetIndex * 100) + currentSheetProgress) * 100 / totalProgressUnits;
-//
-//                    file.setProgress(globalProgress);
-//                    file.setMessage("Processando sheet: " + cohortDescription + " (" + globalProgress + "%)");
-//                    patientImportFileRepository.update(file);
-//                }
-//
-//                sheetIndex++;
-//            }
-//
-//            file.setStatus(PatientImportFile.ImportStatus.PROCESSED);
-//            file.setProgress(100);
-//            file.setMessage("Processamento concluído com sucesso.");
-//            patientImportFileRepository.update(file);
-//
-//        } catch (Exception e) {
-//            file.setStatus(PatientImportFile.ImportStatus.FAILED);
-//            file.setMessage("Erro no processamento: " + e.getMessage());
-//            file.setProgress(0);
-//            patientImportFileRepository.update(file);
-//        }
-//    }
-//
-
 private int calculateGlobalProgress(PatientImportFile file) {
     List<SheetImportStatus> statuses = sheetImportStatusRepository.findByFile(file);
     if (statuses.isEmpty()) return 0;
 
-    int total = statuses.stream().mapToInt(SheetImportStatus::getProgress).sum();
-    return total / statuses.size();
+    int totalProgress = statuses.stream().mapToInt(SheetImportStatus::getProgress).sum();
+    return totalProgress / statuses.size();
 }
 
 
@@ -268,6 +189,9 @@ public void processFile(PatientImportFile file) {
                         sheetImportStatusRepository.update(sheetStatus);
                     }
 
+                    int processedRows = 0;
+                    int successfulRows = 0;
+                    List<String> errorMessages = new ArrayList<>();
                     for (int rowIndex = 1; rowIndex <= totalRows; rowIndex += batchSize) {
                         int end = Math.min(rowIndex + batchSize - 1, totalRows);
 
@@ -278,18 +202,20 @@ public void processFile(PatientImportFile file) {
                             try {
                                 String patientUUID = row.getCell(5).getStringCellValue();
                                 cohortMemberService.createFromExcel(patientUUID, sheetName, file.getSourceSystem().getCode());
+                                successfulRows++;
                             } catch (Exception e) {
-                                hasErrors = true; // <-- Se der erro, marca a flag
-                                System.err.println("Erro na linha " + r + " da sheet " + sheetName + ": " + e.getMessage());
+                                hasErrors = true;
+                                String errorMessage = "Erro na linha " + r + " da lista " + sheetName + ": " + e.getMessage();
+                                errorMessages.add(errorMessage);
                             }
+                            processedRows++;
                         }
 
-                        processed = end;
-                        int progress = (processed * 100) / totalRows;
+                        int sheetProgress = (processedRows * 100) / totalRows;
 
                         if (sheetStatus != null) {
-                            sheetStatus.setProgress(progress);
-                            sheetStatus.setMessage("Processando... (" + progress + "%)");
+                            sheetStatus.setProgress(sheetProgress);
+                            sheetStatus.setMessage("Processando... (" + sheetProgress + "%)");
                             sheetStatus.setUpdatedAt(new Date());
                             sheetImportStatusRepository.update(sheetStatus);
                         }
@@ -303,16 +229,22 @@ public void processFile(PatientImportFile file) {
                     }
 
                     if (sheetStatus != null) {
-                        sheetStatus.setProgress(100);
                         sheetStatus.setUpdatedAt(new Date());
 
-                        // <-- AQUI decidimos o status final da sheet com base em erros
                         if (hasErrors) {
                             sheetStatus.setStatus(SheetImportStatus.SheetStatus.FAILED);
-                            sheetStatus.setMessage("Processada com erros.");
+                            int failedRows = processedRows - successfulRows;
+                            int progress = (int) (((double) successfulRows / processedRows) * 100);
+                            sheetStatus.setProgress(progress);
+
+
+                            // Junta todos os erros com quebra de linha
+                            String allErrors = String.join("\n", errorMessages);
+                            sheetStatus.setMessage(allErrors);
                         } else {
                             sheetStatus.setStatus(SheetImportStatus.SheetStatus.PROCESSED);
                             sheetStatus.setMessage("Processada com sucesso.");
+                            sheetStatus.setProgress(100);
                         }
 
                         sheetImportStatusRepository.update(sheetStatus);
@@ -322,7 +254,7 @@ public void processFile(PatientImportFile file) {
                     synchronized (lock) {
                         file.setStatus(PatientImportFile.ImportStatus.FAILED);
                         file.setMessage("Erro em " + sheetName + ": " + e.getMessage());
-                        file.setProgress(0);
+//                        file.setProgress(0);
                         repository.update(file);
                     }
 
@@ -360,18 +292,19 @@ public void processFile(PatientImportFile file) {
 
         if (allProcessed) {
             file.setMessage("Todas as sheets processadas com sucesso.");
+            file.setStatus(PatientImportFile.ImportStatus.PROCESSED);
+            file.setProgress(100);
         } else if (anyFailed) {
             file.setStatus(PatientImportFile.ImportStatus.FAILED); //PARTIALLY_FAILED
             file.setMessage("Algumas sheets falharam durante o processamento.");
+            file.setProgress(calculateGlobalProgress(file));
         } else {
             file.setStatus(PatientImportFile.ImportStatus.FAILED);
             file.setMessage("Erro geral no processamento.");
+            file.setProgress(0);
         }
 
-        file.setProgress(100); // JOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
         repository.update(file);
-
-
     } catch (Exception e) {
         file.setStatus(PatientImportFile.ImportStatus.FAILED);
         file.setMessage("Erro global: " + e.getMessage());

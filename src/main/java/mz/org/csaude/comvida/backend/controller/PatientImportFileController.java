@@ -66,11 +66,6 @@ public class PatientImportFileController extends BaseController {
         return result.map(HttpResponse::ok).orElse(HttpResponse.notFound());
     }
 
-//    @Get(uri = "/", produces = MediaType.APPLICATION_JSON)
-//    public List<PatientImportFile> listAll() {
-//        return (List<PatientImportFile>) importService.findAll();
-//    }
-
     @Get(uri = "/{id}/status", produces = MediaType.TEXT_PLAIN)
     public MutableHttpResponse<PatientImportFile.ImportStatus> getStatus(@PathVariable Long id) {
         Optional<PatientImportFile> file = importService.findById(id);
