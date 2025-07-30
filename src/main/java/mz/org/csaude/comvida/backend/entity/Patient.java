@@ -10,7 +10,7 @@ import mz.org.csaude.comvida.backend.entity.Person;
 @Table(name = "patients")
 @Getter
 @Setter
-@Serdeable.Deserializable
+@Serdeable
 public class Patient extends Person {
 
     @Column(name = "patient_identifier", columnDefinition = "json")

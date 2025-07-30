@@ -4,6 +4,8 @@ import io.micronaut.data.annotation.Repository;
 import io.micronaut.data.repository.CrudRepository;
 import jakarta.validation.constraints.NotNull;
 import mz.org.csaude.comvida.backend.entity.Person;
+
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;

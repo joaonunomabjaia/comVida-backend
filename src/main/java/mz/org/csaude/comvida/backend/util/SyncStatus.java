@@ -1,4 +1,4 @@
-package mz.org.fgh.mentoring.util;
+package mz.org.csaude.comvida.backend.util;
 
 public enum SyncStatus {
     PENDING,

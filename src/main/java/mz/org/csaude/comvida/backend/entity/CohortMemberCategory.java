@@ -12,7 +12,7 @@ import mz.org.csaude.comvida.backend.base.BaseEntity;
 @Entity
 @Getter
 @Setter
-@Serdeable.Deserializable
+@Serdeable
 @Table(name = "cohort_member_categories")
 public class CohortMemberCategory extends BaseEntity {
 

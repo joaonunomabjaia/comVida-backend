@@ -16,6 +16,7 @@ public class RESTAPIMapping {
     public static final String USER_SERVICE_ROLE_CONTROLLER = "user-service-roles";
     public static final String PROGRAM_ACTIVITY_CONTROLLER = "/program-activities";
     public static final String GROUP_CONTROLLER = "/groups";
+    public static final String SOURCE_SYSTEM_CONTROLLER = "/source-systems";
 
 
 }

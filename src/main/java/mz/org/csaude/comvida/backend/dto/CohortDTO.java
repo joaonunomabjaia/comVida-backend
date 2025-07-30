@@ -8,6 +8,9 @@ import lombok.Setter;
 import mz.org.csaude.comvida.backend.base.BaseEntityDTO;
 import mz.org.csaude.comvida.backend.entity.Cohort;
 
+import java.time.LocalDate;
+import java.util.Date;
+
 @Getter
 @Setter
 @Serdeable
@@ -16,6 +19,10 @@ public class CohortDTO extends BaseEntityDTO {
     private String name;
     private String description;
     private ProgramActivityDTO programActivity;
+    private LocalDate inclusionDate;
+    private LocalDate exclusionDate;
+    private LocalDate memberCreatedAt;
+
 
     public CohortDTO(Cohort cohort) {
         super(cohort);

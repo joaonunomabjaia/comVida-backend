@@ -4,6 +4,8 @@ import jakarta.inject.Singleton;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 
 @Singleton
@@ -712,5 +714,15 @@ public class DateUtils {
         } catch (Exception e) {
             return 0;
         }
+    }
+
+    public static LocalDate toLocalDateSafe(Date date) {
+        if (date == null) return null;
+
+        if (date instanceof java.sql.Date) {
+            return ((java.sql.Date) date).toLocalDate();
+        }
+
+        return date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
 }

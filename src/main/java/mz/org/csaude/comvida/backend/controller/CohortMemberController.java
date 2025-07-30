@@ -1,15 +1,22 @@
 package mz.org.csaude.comvida.backend.controller;
 
+import io.micronaut.core.annotation.Nullable;
+import io.micronaut.data.model.Page;
+import io.micronaut.data.model.Pageable;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.*;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
 import jakarta.inject.Inject;
 import mz.org.csaude.comvida.backend.api.RESTAPIMapping;
+import mz.org.csaude.comvida.backend.dto.CohortWithMembersDTO;
 import mz.org.csaude.comvida.backend.entity.CohortMember;
 import mz.org.csaude.comvida.backend.service.CohortMemberService;
 
 import java.util.List;
 import java.util.Optional;
 
+@Secured(SecurityRule.IS_AUTHENTICATED)
 @Controller(RESTAPIMapping.COHORT_MEMBER_CONTROLLER)
 public class CohortMemberController {
 
@@ -41,9 +48,9 @@ public class CohortMemberController {
         return HttpResponse.ok(updated);
     }
 
-//    @Delete("/{id}")
-//    public HttpResponse<?> delete(@PathVariable Long id) {
-//        cohortMemberService.deleteById(id);
-//        return HttpResponse.noContent();
-//    }
+    @Get("/cohorts-with-members")
+    public Page<CohortWithMembersDTO> findAllWithMembers(Pageable pageable) {
+        return cohortMemberService.getCohortsWithMembers(pageable);
+    }
+
 }

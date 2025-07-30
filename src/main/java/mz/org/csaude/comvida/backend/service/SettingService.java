@@ -22,6 +22,11 @@ public class SettingService {
         return settingRepository.findByDesignation(designation);
     }
 
+    public Setting getSetting(String designation) {
+        return settingRepository.findByDesignation(designation)
+                .orElseThrow(() -> new IllegalArgumentException("Setting not found: " + designation));
+    }
+
     public Page<Setting> findAll(Pageable pageable) {
         return settingRepository.findAll(pageable);
     }

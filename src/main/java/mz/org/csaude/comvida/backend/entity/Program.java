@@ -11,7 +11,7 @@ import mz.org.csaude.comvida.backend.base.BaseEntity;
 @Entity
 @Getter
 @Setter
-@Serdeable.Deserializable
+@Serdeable
 @Table(name = "programs")
 public class Program extends BaseEntity {
 
