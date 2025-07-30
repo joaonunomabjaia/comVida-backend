@@ -35,10 +35,6 @@ public class ProgramActivityDTO extends BaseEntityDTO {
         activity.setUuid(this.getUuid());
         activity.setName(this.getName());
         if (Utilities.stringHasValue(this.getLifeCycleStatus())) activity.setLifeCycleStatus(mz.org.fgh.mentoring.util.LifeCycleStatus.valueOf(this.getLifeCycleStatus()));
-        activity.setCreatedAt(this.getCreatedAt());
-        activity.setCreatedBy(this.getCreatedBy());
-        activity.setUpdatedAt(this.getUpdatedAt());
-        activity.setUpdatedBy(this.getUpdatedBy());
 
         if (this.program != null) {
             activity.setProgram(this.program.toEntity());

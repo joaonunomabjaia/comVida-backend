@@ -16,6 +16,7 @@ import mz.org.csaude.comvida.backend.api.response.PaginatedResponse;
 import mz.org.csaude.comvida.backend.api.response.SuccessResponse;
 import mz.org.csaude.comvida.backend.base.BaseController;
 import mz.org.csaude.comvida.backend.dto.CohortDTO;
+import mz.org.csaude.comvida.backend.dto.LifeCycleStatusDTO;
 import mz.org.csaude.comvida.backend.entity.Cohort;
 import mz.org.csaude.comvida.backend.service.CohortService;
 import mz.org.csaude.comvida.backend.util.Utilities;
@@ -113,4 +114,12 @@ public class CohortController extends BaseController {
                 PaginatedResponse.of(cohortDTOs, cohorts.getTotalSize(), cohorts.getPageable(), message)
         );
     }
+
+    @Operation(summary = "Activate or deactivate a cohort by changing its LifeCycleStatus")
+    @Put("/{uuid}/status")
+    public HttpResponse<?> updateLifeCycleStatus(@PathVariable String uuid, @Body LifeCycleStatusDTO dto) {
+        Cohort updatedCohort = service.updateLifeCycleStatus(uuid, dto.getLifeCycleStatus());
+        return HttpResponse.ok(SuccessResponse.of("Estado da coorte atualizado com sucesso", new CohortDTO(updatedCohort)));
+    }
+
 }

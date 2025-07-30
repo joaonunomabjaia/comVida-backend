@@ -15,7 +15,7 @@ import java.util.*;
 public class Utilities {
 
     public static boolean stringHasValue(String string){
-        return string != null && !string.isEmpty() && string.trim().length() > 0;
+        return string != null && !string.isEmpty() && string.trim().length() > 0 && !"null".equalsIgnoreCase(string.trim());
     }
 
     public static String ensureXCaractersOnNumber(long number, int x){
