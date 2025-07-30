@@ -3,7 +3,6 @@ package mz.org.csaude.comvida.backend.dto;
 import io.micronaut.core.annotation.Creator;
 import io.micronaut.serde.annotation.Serdeable;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mz.org.csaude.comvida.backend.base.BaseEntityDTO;
 import mz.org.csaude.comvida.backend.entity.Group;
@@ -15,7 +14,7 @@ public class GroupDTO extends BaseEntityDTO {
 
     private String name;
     private String description;
-    private ProgramActivityDTO programActivityDTO;
+    private ProgramActivityDTO programActivity;
 
     @Creator
     public GroupDTO() {
@@ -26,7 +25,7 @@ public class GroupDTO extends BaseEntityDTO {
         this.name = group.getName();
         this.description = group.getDescription();
         if (group.getProgramActivity() != null) {
-            this.programActivityDTO = new ProgramActivityDTO(group.getProgramActivity());
+            this.programActivity = new ProgramActivityDTO(group.getProgramActivity());
         }
     }
 
@@ -36,7 +35,7 @@ public class GroupDTO extends BaseEntityDTO {
         group.setUuid(this.getUuid());
         group.setName(this.getName());
         group.setDescription(this.getDescription());
-        group.setProgramActivity(this.programActivityDTO.toEntity());
+        group.setProgramActivity(this.programActivity.toEntity());
         group.setLifeCycleStatus(mz.org.fgh.mentoring.util.LifeCycleStatus.valueOf(this.getLifeCycleStatus()));
         group.setCreatedAt(this.getCreatedAt());
         group.setCreatedBy(this.getCreatedBy());

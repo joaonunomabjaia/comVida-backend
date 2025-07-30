@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mz.org.csaude.comvida.backend.base.BaseEntityDTO;
 import mz.org.csaude.comvida.backend.entity.Program;
+import mz.org.csaude.comvida.backend.util.Utilities;
 
 @Getter
 @Setter
@@ -38,11 +39,7 @@ public class ProgramDTO extends BaseEntityDTO {
         program.setUuid(this.getUuid());
         program.setName(this.getName());
         program.setDescription(this.getDescription());
-        //program.setLifeCycleStatus(mz.org.fgh.mentoring.util.LifeCycleStatus.valueOf(this.getLifeCycleStatus()));
-        program.setCreatedAt(this.getCreatedAt());
-        program.setCreatedBy(this.getCreatedBy());
-        program.setUpdatedAt(this.getUpdatedAt());
-        program.setUpdatedBy(this.getUpdatedBy());
+        if (Utilities.stringHasValue(this.getLifeCycleStatus())) program.setLifeCycleStatus(mz.org.fgh.mentoring.util.LifeCycleStatus.valueOf(this.getLifeCycleStatus()));
         return program;
     }
 }
