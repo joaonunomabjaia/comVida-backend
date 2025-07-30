@@ -13,7 +13,6 @@ import mz.org.csaude.comvida.backend.dto.SettingDTO;
 @Entity(name = "settings")
 @Table(name = "settings")
 @Data
-@NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Serdeable.Deserializable
 @ToString
@@ -42,6 +41,8 @@ public class Setting extends BaseEntity {
     private String description;
 
     @Creator
+    public Setting(){}
+
     public Setting(String designation, String value, String type, Boolean enabled, String description) {
         this.designation = designation;
         this.value = value;
