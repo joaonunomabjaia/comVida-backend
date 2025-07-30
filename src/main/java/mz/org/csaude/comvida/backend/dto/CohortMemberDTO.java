@@ -17,7 +17,7 @@ public class CohortMemberDTO extends BaseEntityDTO {
     private String uuid;
     private CohortDTO cohort;
     private PatientDTO patient;
-    private SourceTypeDTO sourceType;
+    private SourceSystemDTO sourceSystem;
 
     private String originId;
     private Date inclusionDate;
@@ -29,7 +29,7 @@ public class CohortMemberDTO extends BaseEntityDTO {
         this.uuid = member.getUuid();
         this.cohort = member.getCohort() != null ? new CohortDTO(member.getCohort()) : null;
         this.patient = member.getPatient() != null ? new PatientDTO(member.getPatient()) : null;
-        this.sourceType = member.getCohortMemberSource() != null ? new SourceTypeDTO(member.getCohortMemberSource()) : null;
+        this.sourceSystem = member.getSourceSystem() != null ? new SourceSystemDTO(member.getSourceSystem()) : null;
         this.originId = member.getOriginId();
         this.inclusionDate = member.getInclusionDate();
         this.exclusionDate = member.getExclusionDate();

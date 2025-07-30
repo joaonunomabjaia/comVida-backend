@@ -1,11 +1,14 @@
 package mz.org.csaude.comvida.backend.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.core.annotation.Nullable;
 import io.micronaut.data.model.Page;
 import io.micronaut.data.model.Pageable;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.HttpStatus;
+import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.*;
+import io.micronaut.http.multipart.CompletedFileUpload;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.rules.SecurityRule;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,17 +16,19 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.inject.Inject;
+import mz.org.csaude.comvida.backend.api.RESTAPIMapping;
 import mz.org.csaude.comvida.backend.base.BaseController;
 import mz.org.csaude.comvida.backend.dto.CohortDTO;
 import mz.org.csaude.comvida.backend.entity.Cohort;
 import mz.org.csaude.comvida.backend.service.CohortService;
+import mz.org.csaude.comvida.backend.util.Utilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
 @Secured(SecurityRule.IS_AUTHENTICATED)
-@Controller("/api/cohorts")
+@Controller(RESTAPIMapping.COHORT_CONTROLLER)
 @Tag(name = "Cohort", description = "API for managing cohorts")
 public class CohortController extends BaseController {
 
@@ -36,11 +41,11 @@ public class CohortController extends BaseController {
     @ApiResponse(responseCode = "200", description = "List of cohorts returned successfully")
     @Get
     public HttpResponse<?> listOrSearch(
-            @Parameter(description = "Name to search for", example = "Gravidez")
+            @Parameter(description = "Name to search for", example = "Faltosos")
             @QueryValue("name") String name,
             @Parameter(hidden = true) @Nullable Pageable pageable) {
         try {
-            Page<Cohort> result = name.isBlank()
+            Page<Cohort> result = Utilities.stringHasValue(name)
                     ? service.findAll(resolvePageable(pageable))
                     : service.searchByName(name, resolvePageable(pageable));
 
@@ -50,6 +55,25 @@ public class CohortController extends BaseController {
             return buildErrorResponse(e);
         }
     }
+
+    @Operation(summary = "List cohorts with members", description = "Returns all cohorts that have associated members")
+    @ApiResponse(responseCode = "200", description = "Cohorts with members retrieved successfully")
+    @Get("/with-members")
+    public HttpResponse<?> listWithMembers(
+            @Parameter(hidden = true) @Nullable Pageable pageable,
+            @QueryValue("serviceId") @Nullable Long serviceId
+    ) {
+        try {
+            Page<CohortDTO> result = service.findAllWithMembersAndFilters(serviceId, pageable);
+
+            return HttpResponse.ok(result);
+        } catch (Exception e) {
+            LOG.error("Error fetching cohorts with members: {}", e.getMessage(), e);
+            return buildErrorResponse(e);
+        }
+    }
+
+
 
     @Operation(summary = "Get cohort by ID", description = "Fetch a cohort by its numeric ID")
     @ApiResponse(responseCode = "200", description = "Cohort found")
@@ -120,5 +144,4 @@ public class CohortController extends BaseController {
             return buildErrorResponse(e);
         }
     }
-
 }

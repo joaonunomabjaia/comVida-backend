@@ -7,6 +7,7 @@ import mz.org.csaude.comvida.backend.base.BaseEntity;
 import mz.org.csaude.comvida.backend.base.BaseEntityDTO;
 import mz.org.csaude.comvida.backend.entity.Person;
 
+import java.time.LocalDate;
 import java.util.Date;
 
 @Getter

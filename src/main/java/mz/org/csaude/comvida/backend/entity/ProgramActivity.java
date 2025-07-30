@@ -9,7 +9,7 @@ import mz.org.csaude.comvida.backend.base.BaseEntity;
 @Entity
 @Getter
 @Setter
-@Serdeable.Deserializable
+@Serdeable
 @Table(name = "program_activities")
 public class ProgramActivity extends BaseEntity {
 

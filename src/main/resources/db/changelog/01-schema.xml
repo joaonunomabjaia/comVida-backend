@@ -6,7 +6,7 @@
        http://www.liquibase.org/xml/ns/dbchangelog
        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.4.xsd">
 
-    <changeSet id="01-create-tags" author="JNMabjaia">
+    <changeSet id="create-tags" author="JNMabjaia">
         <createTable tableName="tags">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -38,42 +38,7 @@
         </createTable>
     </changeSet>
 
-
-    <changeSet id="02-create-cohorts" author="JNMabjaia">
-        <createTable tableName="cohorts">
-            <column name="id" type="BIGINT" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-
-            <column name="uuid" type="varchar(50)">
-                <constraints nullable="false" unique="true"/>
-            </column>
-
-            <column name="created_by" type="varchar(50)">
-                <constraints nullable="false"/>
-            </column>
-
-            <column name="created_at" type="timestamp">
-                <constraints nullable="false"/>
-            </column>
-
-            <column name="updated_by" type="varchar(50)"/>
-
-            <column name="updated_at" type="timestamp"/>
-
-            <column name="life_cycle_status" type="varchar(100)">
-                <constraints nullable="false"/>
-            </column>
-
-            <column name="name" type="varchar(255)">
-                <constraints nullable="false"/>
-            </column>
-
-            <column name="description" type="varchar(255)"/>
-        </createTable>
-    </changeSet>
-
-    <changeSet id="03-create-roles" author="JNMabjaia">
+    <changeSet id="create-roles" author="JNMabjaia">
         <createTable tableName="roles">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -105,102 +70,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="04-create-cohort_member_sources" author="JNMabjaia">
-        <createTable tableName="cohort_member_sources">
-            <column name="id" type="BIGINT" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-
-            <column name="uuid" type="varchar(50)">
-                <constraints nullable="false" unique="true"/>
-            </column>
-
-            <column name="created_by" type="varchar(50)">
-                <constraints nullable="false"/>
-            </column>
-
-            <column name="created_at" type="timestamp">
-                <constraints nullable="false"/>
-            </column>
-
-            <column name="updated_by" type="varchar(50)"/>
-
-            <column name="updated_at" type="timestamp"/>
-
-            <column name="life_cycle_status" type="varchar(100)">
-                <constraints nullable="false"/>
-            </column>
-
-            <column name="name" type="varchar(255)"/>
-        </createTable>
-    </changeSet>
-
-    <changeSet id="05-create-person" author="JNMabjaia">
-        <createTable tableName="person">
-            <column name="id" type="BIGINT" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-
-            <column name="uuid" type="varchar(50)">
-                <constraints nullable="false" unique="true"/>
-            </column>
-
-            <column name="created_by" type="varchar(50)">
-                <constraints nullable="false"/>
-            </column>
-
-            <column name="created_at" type="timestamp">
-                <constraints nullable="false"/>
-            </column>
-
-            <column name="updated_by" type="varchar(50)"/>
-            <column name="updated_at" type="timestamp"/>
-            <column name="life_cycle_status" type="varchar(100)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="names" type="json"/>
-            <column name="sex" type="varchar(10)"/>
-            <column name="birthdate" type="date"/>
-            <column name="address" type="json"/>
-            <column name="person_attributes" type="json"/>
-        </createTable>
-    </changeSet>
-
-    <changeSet id="06-create-patient" author="JNMabjaia">
-        <createTable tableName="patients">
-            <column name="id" type="BIGINT">
-                <constraints primaryKey="true" nullable="false"
-                             referencedTableName="person"
-                             referencedColumnNames="id"
-                             foreignKeyName="fk_patient_person"/>
-            </column>
-            <column name="patient_identifier" type="json"/>
-            <column name="status" type="VARCHAR(50)"/>
-        </createTable>
-    </changeSet>
-
-    <changeSet id="07-create-user" author="JNMabjaia">
-        <createTable tableName="users">
-            <column name="id" type="BIGINT">
-                <constraints primaryKey="true" nullable="false"
-                             referencedTableName="person"
-                             referencedColumnNames="id"
-                             foreignKeyName="fk_user_person"/>
-            </column>
-            <column name="username" type="VARCHAR(255)">
-                <constraints nullable="false" unique="true"/>
-            </column>
-            <column name="password" type="VARCHAR(500)">
-                <constraints nullable="false"/>
-            </column>
-            <column name="status" type="VARCHAR(50)"/>
-            <column name="should_reset_password" type="BOOLEAN"/>
-            <column name="salt" type="VARCHAR(500)"/>
-        </createTable>
-    </changeSet>
-
-
-    <changeSet id="12-create-programs" author="JNMabjaia">
+    <changeSet id="create-programs" author="JNMabjaia">
         <createTable tableName="programs">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -230,7 +100,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet id="13-create-program-activities" author="JNMabjaia">
+    <changeSet id="create-program-activities" author="JNMabjaia">
         <createTable tableName="program_activities">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -266,6 +136,196 @@
                                  referencedColumnNames="id"
                                  onDelete="SET NULL"/>
 
+    </changeSet>
+
+    <changeSet id="create-cohorts" author="JNMabjaia">
+        <createTable tableName="cohorts">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="uuid" type="varchar(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+            <column name="created_by" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated_by" type="varchar(50)"/>
+
+            <column name="updated_at" type="timestamp"/>
+
+            <column name="life_cycle_status" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="description" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create-source-system-table" author="joao.mabjaia">
+        <createTable tableName="source_systems">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP"/>
+            <column name="created_by" type="VARCHAR(255)"/>
+            <column name="updated_at" type="TIMESTAMP"/>
+            <column name="updated_by" type="VARCHAR(255)"/>
+            <column name="life_cycle_status" type="VARCHAR(20)"/>
+            <column name="code" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="description" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create-patient-import-files" author="JNMabjaia">
+        <createTable tableName="patient_import_files">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="uuid" type="varchar(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+            <column name="created_by" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated_by" type="varchar(50)"/>
+            <column name="updated_at" type="timestamp"/>
+            <column name="life_cycle_status" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="file" type="BYTEA" >
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="status" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="source_system_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="progress" type="int" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="message" type="varchar(500)"/>
+
+            <column name="program_activity_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Foreign key para program_activity_id -->
+        <addForeignKeyConstraint
+                baseTableName="patient_import_files"
+                baseColumnNames="program_activity_id"
+                constraintName="fk_patient_import_file_program_activity"
+                referencedTableName="program_activities"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <!-- Foreign key para source_system_id -->
+        <addForeignKeyConstraint
+                baseTableName="patient_import_files"
+                baseColumnNames="source_system_id"
+                constraintName="fk_patient_import_file_source_system"
+                referencedTableName="source_systems"
+                referencedColumnNames="id"
+                onDelete="RESTRICT"/>
+    </changeSet>
+
+    <changeSet id="create-person" author="JNMabjaia">
+        <createTable tableName="person">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="uuid" type="varchar(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+            <column name="created_by" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated_by" type="varchar(50)"/>
+            <column name="updated_at" type="timestamp"/>
+            <column name="life_cycle_status" type="varchar(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="names" type="json"/>
+            <column name="sex" type="varchar(10)"/>
+            <column name="birthdate" type="date"/>
+            <column name="address" type="json"/>
+            <column name="person_attributes" type="json"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create-patient" author="JNMabjaia">
+        <createTable tableName="patients">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"
+                             referencedTableName="person"
+                             referencedColumnNames="id"
+                             foreignKeyName="fk_patient_person"/>
+            </column>
+            <column name="patient_identifier" type="json"/>
+            <column name="status" type="VARCHAR(50)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create-user" author="JNMabjaia">
+        <createTable tableName="users">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"
+                             referencedTableName="person"
+                             referencedColumnNames="id"
+                             foreignKeyName="fk_user_person"/>
+            </column>
+            <column name="username" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(50)"/>
+            <column name="should_reset_password" type="BOOLEAN"/>
+            <column name="salt" type="VARCHAR(500)"/>
+        </createTable>
     </changeSet>
 
     <changeSet id="comvida-eligibility-criteria-20240528" author="voloide">
@@ -309,8 +369,7 @@
                 referencedColumnNames="ID"/>
     </changeSet>
 
-
-    <changeSet id="09-create-cohort-members" author="JNMabjaia">
+    <changeSet id="create-cohort-members" author="JNMabjaia">
         <createTable tableName="cohort_members">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -330,17 +389,31 @@
 
             <column name="updated_by" type="varchar(50)"/>
             <column name="updated_at" type="timestamp"/>
+
             <column name="life_cycle_status" type="varchar(100)">
                 <constraints nullable="false"/>
             </column>
 
-            <column name="cohort_id" type="BIGINT"/>
-            <column name="patient_id" type="BIGINT"/>
-            <column name="source_id" type="BIGINT"/>
+            <column name="cohort_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="patient_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="source_system_id" type="BIGINT"/>
+            <column name="import_file_id" type="BIGINT"/>
+
             <column name="origin_id" type="varchar(255)"/>
             <column name="inclusion_date" type="date"/>
             <column name="exclusion_date" type="date"/>
+
+            <column name="source_type" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
         </createTable>
+
         <addForeignKeyConstraint baseColumnNames="cohort_id"
                                  baseTableName="cohort_members"
                                  constraintName="fk_cohort_members_cohort"
@@ -355,16 +428,22 @@
                                  referencedTableName="patients"
                                  onDelete="SET NULL"/>
 
-        <addForeignKeyConstraint baseColumnNames="source_id"
+        <addForeignKeyConstraint baseColumnNames="source_system_id"
                                  baseTableName="cohort_members"
                                  constraintName="fk_cohort_members_source"
                                  referencedColumnNames="id"
-                                 referencedTableName="cohort_member_sources"
+                                 referencedTableName="source_systems"
                                  onDelete="SET NULL"/>
 
+        <addForeignKeyConstraint baseColumnNames="import_file_id"
+                                 baseTableName="cohort_members"
+                                 constraintName="fk_cohort_members_import_file"
+                                 referencedColumnNames="id"
+                                 referencedTableName="patient_import_files"
+                                 onDelete="SET NULL"/>
     </changeSet>
 
-    <changeSet id="10-create-cohort-member-categories" author="JNMabjaia">
+    <changeSet id="create-cohort-member-categories" author="JNMabjaia">
         <createTable tableName="cohort_member_categories">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -407,66 +486,7 @@
 
     </changeSet>
 
-    <changeSet id="11-create-patient-import-files" author="JNMabjaia">
-        <createTable tableName="patient_import_files">
-            <column name="id" type="BIGINT" autoIncrement="true">
-                <constraints primaryKey="true" nullable="false"/>
-            </column>
-
-            <column name="uuid" type="varchar(50)">
-                <constraints nullable="false" unique="true"/>
-            </column>
-
-            <column name="created_by" type="varchar(50)">
-                <constraints nullable="false"/>
-            </column>
-
-            <column name="created_at" type="timestamp">
-                <constraints nullable="false"/>
-            </column>
-
-            <column name="updated_by" type="varchar(50)"/>
-            <column name="updated_at" type="timestamp"/>
-            <column name="life_cycle_status" type="varchar(100)">
-                <constraints nullable="false"/>
-            </column>
-
-            <column name="name" type="varchar(255)">
-                <constraints nullable="false"/>
-            </column>
-
-            <column name="file" type="BYTEA" >
-                <constraints nullable="false"/>
-            </column>
-
-            <column name="status" type="varchar(20)">
-                <constraints nullable="false"/>
-            </column>
-
-            <column name="source_system" type="varchar(100)" />
-
-            <column name="progress" type="int" defaultValueNumeric="0">
-                <constraints nullable="false"/>
-            </column>
-
-            <column name="message" type="varchar(500)"/>
-
-            <column name="program_activity_id" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
-        </createTable>
-
-        <!-- Foreign key for program_activity_id -->
-        <addForeignKeyConstraint
-                baseTableName="patient_import_files"
-                baseColumnNames="program_activity_id"
-                constraintName="fk_patient_import_file_program_activity"
-                referencedTableName="program_activities"
-                referencedColumnNames="id"
-                onDelete="CASCADE"/>
-    </changeSet>
-
-    <changeSet id="14-create-patient-import-configurations" author="JNMabjaia">
+    <changeSet id="create-patient-import-configurations" author="JNMabjaia">
         <createTable tableName="patient_import_configurations">
             <column name="id" type="BIGINT" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -520,8 +540,6 @@
                                      referencedColumnNames="id"
                                      onDelete="RESTRICT"/>
     </changeSet>
-
-
 
     <changeSet id="comvida-groups-20240528" author="voloide">
         <createTable tableName="groups">
@@ -627,7 +645,7 @@
                 referencedColumnNames="ID"/>
     </changeSet>
 
-    <changeSet id="15-create-allocations" author="seu-nome">
+    <changeSet id="create-allocations" author="seu-nome">
         <createTable tableName="allocations">
             <column name="id" type="BIGINT">
                 <constraints primaryKey="true" nullable="false"/>
@@ -869,7 +887,6 @@
         </insert>
     </changeSet>
 
-
     <changeSet id="insert-admin-user" author="voloide">
         <insert tableName="person">
             <column name="uuid" value="9f318e8e-b12e-4c93-b47c-2b2e7e5f5e2b"/>
@@ -918,23 +935,71 @@
             constraintName="fk_cohort_program_activity"/>
     </changeSet>
 
-    <changeSet id="add-source-type-to-cohort-members" author="JNMabjaia">
-        <!-- Adiciona a coluna com valor default 1 (remova o default se não quiser) -->
-        <addColumn tableName="cohort_members">
-            <column name="source_type_id" type="BIGINT">
-                <constraints nullable="false"/>
-            </column>
-        </addColumn>
+    <changeSet id="insert-default-settings" author="joao.mabjaia">
+        <insert tableName="settings">
+            <column name="uuid" value="5sacde94-183c-43bb-9bfb-09a0c390e07e"/>
+            <column name="designation" value="BATCH_SIZE"/>
+            <column name="setting_value" value="100"/>
+            <column name="setting_type" value="INTEGER"/>
+            <column name="enabled" valueBoolean="true"/>
+            <column name="description" value="Quantidade de linhas a processar por vez ao importar ficheiros."/>
+            <column name="created_at" valueDate="NOW()"/>
+            <column name="created_by" value="system"/>
+            <column name="life_cycle_status" value="ACTIVE"/>
+        </insert>
 
-        <!-- Adiciona a chave estrangeira -->
-        <addForeignKeyConstraint
-                baseTableName="cohort_members"
-                baseColumnNames="source_type_id"
-                referencedTableName="cohort_member_sources"
-                referencedColumnNames="id"
-                constraintName="fk_cohort_member_source_type"/>
+        <insert tableName="settings">
+            <column name="uuid" value="8jacde94-183c-43bb-9bfb-09a0c390e07e"/>
+            <column name="designation" value="IMPORT_JOB_INTERVAL_MIN"/>
+            <column name="setting_value" value="5"/>
+            <column name="setting_type" value="INTEGER"/>
+            <column name="enabled" valueBoolean="true"/>
+            <column name="description" value="Intervalo (em minutos) entre execuções do job de importação de ficheiros."/>
+            <column name="created_at" valueDate="NOW()"/>
+            <column name="created_by" value="system"/>
+            <column name="life_cycle_status" value="ACTIVE"/>
+        </insert>
+
+        <insert tableName="settings">
+            <column name="uuid" value="7nacde94-183c-43bb-9bfb-09a0c390e07e"/>
+            <column name="designation" value="ALLOW_DB_UPDATE_ON_MATCH"/>
+            <column name="setting_value" value="true"/>
+            <column name="setting_type" value="BOOLEAN"/>
+            <column name="enabled" valueBoolean="true"/>
+            <column name="description" value="Permite ou não atualizar registros existentes com base nos dados importados."/>
+            <column name="created_at" valueDate="NOW()"/>
+            <column name="created_by" value="system"/>
+            <column name="life_cycle_status" value="ACTIVE"/>
+        </insert>
     </changeSet>
 
+    <changeSet id="add-sheet-import-status" author="joao.mabjaia">
+        <createTable tableName="sheet_import_status">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="uuid" type="VARCHAR(36)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP"/>
+            <column name="created_by" type="VARCHAR(255)"/>
+            <column name="updated_at" type="TIMESTAMP"/>
+            <column name="updated_by" type="VARCHAR(255)"/>
+            <column name="life_cycle_status" type="VARCHAR(20)"/>
+            <column name="sheet_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="progress" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="message" type="VARCHAR(500)"/>
+            <column name="import_file_id" type="BIGINT">
+                <constraints nullable="false" foreignKeyName="fk_sheet_import_file" references="patient_import_files(id)"/>
+            </column>
+        </createTable>
+    </changeSet>
 
-    
 </databaseChangeLog>

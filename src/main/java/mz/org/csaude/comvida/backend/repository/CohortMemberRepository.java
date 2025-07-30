@@ -2,7 +2,9 @@ package mz.org.csaude.comvida.backend.repository;
 
 import io.micronaut.data.annotation.Repository;
 import io.micronaut.data.repository.CrudRepository;
+import io.micronaut.data.repository.PageableRepository;
 import jakarta.validation.constraints.NotNull;
+import mz.org.csaude.comvida.backend.entity.Cohort;
 import mz.org.csaude.comvida.backend.entity.CohortMember;
 import java.util.List;
 import java.util.Optional;
@@ -25,4 +27,10 @@ public interface CohortMemberRepository extends CrudRepository<CohortMember, Lon
     Optional<CohortMember> findByOriginId(String originId);
 
     Optional<CohortMember> findByUuid(String uuid);
+
+    List<CohortMember> findByCohort(Cohort cohort);
+
+
+    Optional<CohortMember> findFirstByCohortOrderByCreatedAtAsc(Cohort cohort);
+
 }

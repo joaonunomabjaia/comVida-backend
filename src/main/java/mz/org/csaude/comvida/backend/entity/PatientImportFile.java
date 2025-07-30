@@ -16,9 +16,8 @@ public class PatientImportFile extends BaseEntity {
     @Column(nullable = false, length = 255)
     private String name; // Nome original ou descritivo do arquivo
 
-    @Lob
-    @Column(name = "file", nullable = false, columnDefinition = "MEDIUMBLOB")
-    private byte[] file; // Conteúdo binário do arquivo
+    @Column(name = "file", columnDefinition = "bytea")
+    private byte[] file;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -31,11 +30,20 @@ public class PatientImportFile extends BaseEntity {
     @Column(length = 500)
     private String message; // Mensagem de erro ou resumo da importação
 
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
+    @JoinColumn(name = "source_system_id", nullable = false)
+    private SourceSystem sourceSystem;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "program_activity_id", nullable = false)
+    private ProgramActivity programActivity;
+
     public enum ImportStatus {
         PENDING,
         PROCESSING,
-        DONE,
-        FAILED
+        PROCESSED,
+        FAILED,
+//        PARTIALLY_FAILED
     }
 
 }

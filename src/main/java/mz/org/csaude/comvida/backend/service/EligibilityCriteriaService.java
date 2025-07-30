@@ -1,13 +1,13 @@
 package mz.org.csaude.comvida.backend.service;
 
+import io.micronaut.data.model.Page;
+import io.micronaut.data.model.Pageable;
 import jakarta.inject.Singleton;
 import jakarta.transaction.Transactional;
 import mz.org.csaude.comvida.backend.entity.EligibilityCriteria;
-import mz.org.csaude.comvida.backend.repository.EligibilityCriteriaRepository;
 import mz.org.csaude.comvida.backend.base.BaseService;
-import mz.org.csaude.comvida.backend.util.DateUtils;
+import mz.org.csaude.comvida.backend.repository.EligibilityCriteriaRepository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Singleton
@@ -19,8 +19,13 @@ public class EligibilityCriteriaService extends BaseService {
         this.eligibilityCriteriaRepository = eligibilityCriteriaRepository;
     }
 
-    public List<EligibilityCriteria> findAll() {
-        return eligibilityCriteriaRepository.findAll();
+
+    public Page<EligibilityCriteria> findAll(Pageable pageable) {
+        return eligibilityCriteriaRepository.findAll(pageable);
+    }
+
+    public Page<EligibilityCriteria> searchByCriteria(String criteria, Pageable pageable) {
+        return eligibilityCriteriaRepository.findByCriteriaIlike("%" + criteria + "%", pageable);
     }
 
     public Optional<EligibilityCriteria> findById(Long id) {
@@ -32,30 +37,12 @@ public class EligibilityCriteriaService extends BaseService {
     }
 
     @Transactional
-    public EligibilityCriteria create(EligibilityCriteria eligibilityCriteria) {
-        eligibilityCriteria.setCreatedAt(DateUtils.getCurrentDate());
-        eligibilityCriteria.setLifeCycleStatus(mz.org.fgh.mentoring.util.LifeCycleStatus.valueOf("ACTIVE"));
-        return eligibilityCriteriaRepository.save(eligibilityCriteria);
+    public EligibilityCriteria save(EligibilityCriteria entity) {
+        return eligibilityCriteriaRepository.save(entity);
     }
 
     @Transactional
-    public EligibilityCriteria update(EligibilityCriteria eligibilityCriteria) {
-        Optional<EligibilityCriteria> existing = eligibilityCriteriaRepository.findByUuid(eligibilityCriteria.getUuid());
-        if (existing.isEmpty()) {
-            throw new RuntimeException("EligibilityCriteria not found");
-        }
-
-        EligibilityCriteria toUpdate = existing.get();
-        toUpdate.setCriteria(eligibilityCriteria.getCriteria());
-        toUpdate.setUpdatedAt(DateUtils.getCurrentDate());
-        toUpdate.setUpdatedBy(eligibilityCriteria.getUpdatedBy());
-
-        return eligibilityCriteriaRepository.update(toUpdate);
-    }
-
-    @Transactional
-    public void delete(String uuid) {
-        Optional<EligibilityCriteria> existing = eligibilityCriteriaRepository.findByUuid(uuid);
-        existing.ifPresent(eligibilityCriteriaRepository::delete);
+    public void delete(Long id) {
+        eligibilityCriteriaRepository.deleteById(id);
     }
 }

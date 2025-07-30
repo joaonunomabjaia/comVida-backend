@@ -9,7 +9,7 @@ import mz.org.csaude.comvida.backend.base.BaseEntity;
 @Entity
 @Getter
 @Setter
-@Serdeable.Deserializable
+@Serdeable
 @Table(name = "cohorts")
 public class Cohort extends BaseEntity {
 
@@ -21,4 +21,5 @@ public class Cohort extends BaseEntity {
     @ManyToOne(optional = false)
     @JoinColumn(name = "program_activity_id", nullable = false)
     private ProgramActivity programActivity;
+
 }

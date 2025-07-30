@@ -1,5 +1,6 @@
 package mz.org.csaude.comvida.backend.entity;
 
+import io.micronaut.core.annotation.Creator;
 import io.micronaut.serde.annotation.Serdeable;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
@@ -13,7 +14,6 @@ import mz.org.csaude.comvida.backend.dto.SettingDTO;
 @Table(name = "settings")
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Serdeable.Deserializable
 @ToString
@@ -40,6 +40,16 @@ public class Setting extends BaseEntity {
     @NotNull
     @Column(name = "DESCRIPTION", nullable = false)
     private String description;
+
+    @Creator
+    public Setting(String designation, String value, String type, Boolean enabled, String description) {
+        this.designation = designation;
+        this.value = value;
+        this.type = type;
+        this.enabled = enabled;
+        this.description = description;
+    }
+
 
     public Setting(SettingDTO settingDTO) {
         super(settingDTO);
