@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import mz.org.csaude.comvida.backend.base.BaseEntityDTO;
 import mz.org.csaude.comvida.backend.entity.ProgramActivity;
+import mz.org.csaude.comvida.backend.util.Utilities;
 
 @Getter
 @Setter
@@ -33,11 +34,7 @@ public class ProgramActivityDTO extends BaseEntityDTO {
         activity.setId(this.getId());
         activity.setUuid(this.getUuid());
         activity.setName(this.getName());
-        activity.setLifeCycleStatus(mz.org.fgh.mentoring.util.LifeCycleStatus.valueOf(this.getLifeCycleStatus()));
-        activity.setCreatedAt(this.getCreatedAt());
-        activity.setCreatedBy(this.getCreatedBy());
-        activity.setUpdatedAt(this.getUpdatedAt());
-        activity.setUpdatedBy(this.getUpdatedBy());
+        if (Utilities.stringHasValue(this.getLifeCycleStatus())) activity.setLifeCycleStatus(mz.org.fgh.mentoring.util.LifeCycleStatus.valueOf(this.getLifeCycleStatus()));
 
         if (this.program != null) {
             activity.setProgram(this.program.toEntity());

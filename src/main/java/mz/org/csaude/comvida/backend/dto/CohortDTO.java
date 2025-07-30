@@ -1,5 +1,6 @@
 package mz.org.csaude.comvida.backend.dto;
 
+import io.micronaut.core.annotation.Creator;
 import io.micronaut.serde.annotation.Serdeable;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,7 +13,6 @@ import java.util.Date;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @Serdeable
 public class CohortDTO extends BaseEntityDTO {
 
@@ -33,6 +33,10 @@ public class CohortDTO extends BaseEntityDTO {
         }
     }
 
+    @Creator
+    public CohortDTO() {
+    }
+
     public Cohort toEntity() {
         Cohort cohort = new Cohort();
         cohort.setId(this.getId());
@@ -40,10 +44,6 @@ public class CohortDTO extends BaseEntityDTO {
         cohort.setName(this.getName());
         cohort.setDescription(this.getDescription());
         cohort.setLifeCycleStatus(mz.org.fgh.mentoring.util.LifeCycleStatus.valueOf(this.getLifeCycleStatus()));
-        cohort.setCreatedAt(this.getCreatedAt());
-        cohort.setCreatedBy(this.getCreatedBy());
-        cohort.setUpdatedAt(this.getUpdatedAt());
-        cohort.setUpdatedBy(this.getUpdatedBy());
         if (this.programActivity != null) {
             cohort.setProgramActivity(this.programActivity.toEntity());
         }
