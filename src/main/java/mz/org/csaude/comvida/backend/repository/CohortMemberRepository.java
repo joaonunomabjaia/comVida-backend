@@ -33,4 +33,5 @@ public interface CohortMemberRepository extends CrudRepository<CohortMember, Lon
 
     Optional<CohortMember> findFirstByCohortOrderByCreatedAtAsc(Cohort cohort);
 
+    long countByCohort(Cohort cohort);
 }

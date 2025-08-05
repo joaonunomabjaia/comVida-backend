@@ -19,4 +19,5 @@ public class RESTAPIMapping {
     public static final String SOURCE_SYSTEM_CONTROLLER = "/source-systems";
 
 
+    public static final String USER_CONTROLLER = "users";
 }

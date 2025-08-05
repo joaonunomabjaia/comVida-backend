@@ -1002,4 +1002,24 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="add-user-attributes-jsonb" author="voloide">
+        <comment>Adiciona coluna attributes como JSONB na tabela users</comment>
+        <addColumn tableName="users">
+            <column name="attributes" type="jsonb"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="update-person-json-columns" author="voloide">
+        <comment>Altera tipos das colunas names, address e person_attributes para JSONB</comment>
+        <sql>
+            ALTER TABLE person ALTER COLUMN names TYPE jsonb USING names::jsonb;
+        </sql>
+        <sql>
+            ALTER TABLE person ALTER COLUMN address TYPE jsonb USING address::jsonb;
+        </sql>
+        <sql>
+            ALTER TABLE person ALTER COLUMN person_attributes TYPE jsonb USING person_attributes::jsonb;
+        </sql>
+    </changeSet>
+
+
 </databaseChangeLog>
