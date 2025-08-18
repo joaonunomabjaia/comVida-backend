@@ -78,7 +78,7 @@ public class UserService extends BaseService {
         if (existing.isEmpty()) throw new RuntimeException("User not found");
 
         User user = existing.get();
-        user.setLifeCycleStatus(status);
+        user.setStatus(String.valueOf(status));
         user.setUpdatedAt(DateUtils.getCurrentDate());
         return userRepository.update(user);
     }

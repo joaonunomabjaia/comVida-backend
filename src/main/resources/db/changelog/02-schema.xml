@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="
+           http://www.liquibase.org/xml/ns/dbchangelog
+           http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.23.xsd">
+
+    <!-- Opcional: para gerar UUIDs no INSERT de migração -->
+    <changeSet id="20250812-00-enable-pgcrypto" author="voloide">
+        <comment>Habilita pgcrypto para usar gen_random_uuid()</comment>
+        <sql>CREATE EXTENSION IF NOT EXISTS pgcrypto;</sql>
+        <rollback>
+            <!-- Não removemos a extensão em rollback -->
+        </rollback>
+    </changeSet>
+
+    <!-- 1) Renomear tabela -->
+    <changeSet id="20250812-01-rename-user-group-roles" author="voloide">
+        <renameTable oldTableName="user_group_roles" newTableName="user_service_roles"/>
+        <rollback>
+            <renameTable oldTableName="user_service_roles" newTableName="user_group_roles"/>
+        </rollback>
+    </changeSet>
+
+    <!-- 2) Adicionar program_activity_id (nullable por enquanto) -->
+    <changeSet id="20250812-02-add-program-activity" author="voloide">
+        <addColumn tableName="user_service_roles">
+            <column name="program_activity_id" type="BIGINT"/>
+        </addColumn>
+
+        <addForeignKeyConstraint
+                baseTableName="user_service_roles"
+                baseColumnNames="program_activity_id"
+                constraintName="fk_usr_progact"
+                referencedTableName="program_activities"
+                referencedColumnNames="id"
+                onDelete="RESTRICT"/>
+
+        <createIndex tableName="user_service_roles" indexName="idx_usr_progact">
+            <column name="program_activity_id"/>
+        </createIndex>
+
+        <rollback>
+            <dropForeignKeyConstraint baseTableName="user_service_roles" constraintName="fk_usr_progact"/>
+            <dropIndex tableName="user_service_roles" indexName="idx_usr_progact"/>
+            <dropColumn tableName="user_service_roles" columnName="program_activity_id"/>
+        </rollback>
+    </changeSet>
+
+    <!-- 3) Criar a nova tabela user_service_role_groups -->
+    <changeSet id="20250812-03-create-user-service-role-groups" author="voloide">
+        <createTable tableName="user_service_role_groups">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="pk_usr_role_groups"/>
+            </column>
+
+            <column name="uuid" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uk_usr_role_groups_uuid"/>
+            </column>
+
+            <column name="created_by" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated_by" type="VARCHAR(50)"/>
+            <column name="updated_at" type="TIMESTAMP"/>
+
+            <column name="life_cycle_status" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="user_service_role_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="group_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+                baseTableName="user_service_role_groups"
+                baseColumnNames="user_service_role_id"
+                constraintName="fk_usr_role_groups_usr"
+                referencedTableName="user_service_roles"
+                referencedColumnNames="id"
+                onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="user_service_role_groups"
+                baseColumnNames="group_id"
+                constraintName="fk_usr_role_groups_group"
+                referencedTableName="groups"
+                referencedColumnNames="id"
+                onDelete="RESTRICT"/>
+
+        <createIndex tableName="user_service_role_groups" indexName="idx_usr_role_groups_usr">
+            <column name="user_service_role_id"/>
+        </createIndex>
+        <createIndex tableName="user_service_role_groups" indexName="idx_usr_role_groups_group">
+            <column name="group_id"/>
+        </createIndex>
+
+        <!-- Evita duplicados do mesmo par -->
+        <addUniqueConstraint
+                tableName="user_service_role_groups"
+                columnNames="user_service_role_id, group_id"
+                constraintName="uk_usr_role_groups_pair"/>
+
+        <rollback>
+            <dropUniqueConstraint tableName="user_service_role_groups" constraintName="uk_usr_role_groups_pair"/>
+            <dropIndex tableName="user_service_role_groups" indexName="idx_usr_role_groups_group"/>
+            <dropIndex tableName="user_service_role_groups" indexName="idx_usr_role_groups_usr"/>
+            <dropForeignKeyConstraint baseTableName="user_service_role_groups" constraintName="fk_usr_role_groups_group"/>
+            <dropForeignKeyConstraint baseTableName="user_service_role_groups" constraintName="fk_usr_role_groups_usr"/>
+            <dropTable tableName="user_service_role_groups"/>
+        </rollback>
+    </changeSet>
+
+    <!-- 4) Migrar dados: mover group_id antigo para a nova tabela -->
+    <changeSet id="20250812-04-migrate-groups" author="voloide" runOnChange="false" runInTransaction="true">
+        <comment>Copia group_id existente para user_service_role_groups e preenche campos base</comment>
+        <sql>
+            INSERT INTO user_service_role_groups
+            (uuid, created_by, created_at, updated_by, updated_at, life_cycle_status, user_service_role_id, group_id)
+            SELECT
+                gen_random_uuid()::text,                       -- uuid
+                COALESCE(usr.created_by, 'system'),            -- created_by
+                COALESCE(usr.created_at, NOW()),               -- created_at
+                usr.updated_by,                                -- updated_by
+                usr.updated_at,                                -- updated_at
+                COALESCE(usr.life_cycle_status, 'ACTIVE'),     -- life_cycle_status
+                usr.id,                                        -- user_service_role_id
+                usr.group_id                                   -- group_id
+            FROM user_service_roles usr
+            WHERE usr.group_id IS NOT NULL;
+        </sql>
+        <rollback>
+            <!-- Opcional: copiar de volta para a coluna antiga se ela existir -->
+            <sql>
+                UPDATE user_service_roles usr
+                SET group_id = g.group_id
+                FROM (
+                SELECT user_service_role_id, group_id
+                FROM user_service_role_groups
+                ) g
+                WHERE usr.id = g.user_service_role_id;
+            </sql>
+            <sql>DELETE FROM user_service_role_groups;</sql>
+        </rollback>
+    </changeSet>
+
+    <!-- 5) Remover a coluna group_id da tabela renomeada -->
+    <changeSet id="20250812-05-drop-group-id" author="voloide">
+        <dropColumn tableName="user_service_roles" columnName="group_id"/>
+        <rollback>
+            <addColumn tableName="user_service_roles">
+                <column name="group_id" type="BIGINT"/>
+            </addColumn>
+            <addForeignKeyConstraint
+                    baseTableName="user_service_roles"
+                    baseColumnNames="group_id"
+                    constraintName="fk_usr_group_roles_group"
+                    referencedTableName="groups"
+                    referencedColumnNames="id"
+                    onDelete="RESTRICT"/>
+        </rollback>
+    </changeSet>
+
+    <!-- 6) (Opcional mas recomendado) Evitar duplicados por combinação -->
+    <changeSet id="20250812-06-unique-on-user-role-program" author="voloide">
+        <addUniqueConstraint
+                tableName="user_service_roles"
+                columnNames="user_id, role_id, program_activity_id"
+                constraintName="uk_usr_user_role_prog"/>
+        <rollback>
+            <dropUniqueConstraint tableName="user_service_roles" constraintName="uk_usr_user_role_prog"/>
+        </rollback>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,30 +1,29 @@
 package mz.org.csaude.comvida.backend.jobs;
 
-import io.micronaut.context.annotation.Context;
-import jakarta.annotation.PostConstruct;
+import io.micronaut.context.event.ApplicationEventListener;
+import io.micronaut.runtime.event.ApplicationStartupEvent;
 import jakarta.annotation.PreDestroy;
 import jakarta.inject.Singleton;
-import jakarta.inject.Inject;
 import mz.org.csaude.comvida.backend.service.PatientImportFileService;
 import mz.org.csaude.comvida.backend.service.SettingService;
-import mz.org.csaude.comvida.backend.entity.Setting;
 
 import java.util.concurrent.*;
 
-@Context
 @Singleton
-public class PatientImportFileJob {
+public class PatientImportFileJob implements ApplicationEventListener<ApplicationStartupEvent> {
 
-    @Inject
-    PatientImportFileService importFileService;
-
-    @Inject
-    SettingService settingService;
+    private final PatientImportFileService importFileService;
+    private final SettingService settingService;
 
     private ScheduledExecutorService scheduler;
 
-    @PostConstruct
-    public void start() {
+    public PatientImportFileJob(PatientImportFileService importFileService, SettingService settingService) {
+        this.importFileService = importFileService;
+        this.settingService = settingService;
+    }
+
+    @Override
+    public void onApplicationEvent(ApplicationStartupEvent event) {
         scheduler = Executors.newSingleThreadScheduledExecutor();
         scheduleNextRun();
     }
@@ -43,7 +42,7 @@ public class PatientImportFileJob {
             } catch (Exception e) {
                 System.err.println("Erro ao processar ficheiros pendentes: " + e.getMessage());
             } finally {
-                scheduleNextRun(); // Agendar novamente após execução
+                scheduleNextRun();
             }
         }, intervalMinutes, TimeUnit.MINUTES);
     }
