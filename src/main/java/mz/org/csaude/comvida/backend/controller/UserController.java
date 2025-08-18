@@ -16,9 +16,15 @@ import mz.org.csaude.comvida.backend.api.response.PaginatedResponse;
 import mz.org.csaude.comvida.backend.api.response.SuccessResponse;
 import mz.org.csaude.comvida.backend.base.BaseController;
 import mz.org.csaude.comvida.backend.dto.LifeCycleStatusDTO;
+import mz.org.csaude.comvida.backend.dto.RoleDTO;
 import mz.org.csaude.comvida.backend.dto.UserDTO;
+import mz.org.csaude.comvida.backend.dto.UserServiceRoleDTO;
+import mz.org.csaude.comvida.backend.dto.request.AssignUserRolesRequest;
+import mz.org.csaude.comvida.backend.dto.request.ReplaceUserRolesRequest;
 import mz.org.csaude.comvida.backend.entity.User;
+import mz.org.csaude.comvida.backend.entity.UserServiceRole;
 import mz.org.csaude.comvida.backend.service.UserService;
+import mz.org.csaude.comvida.backend.service.UserServiceRoleService;
 import mz.org.csaude.comvida.backend.util.Utilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,9 +43,17 @@ public class UserController extends BaseController {
     @Inject
     private UserService userService;
 
+    @Inject
+    private UserServiceRoleService userServiceRoleService;
+
+    // ===========================
+    // Utilizadores (existente)
+    // ===========================
+
     @Get
     @Operation(summary = "Listar ou pesquisar utilizadores por nome (paginado)")
-    public HttpResponse<?> listOrSearch(@Nullable @QueryValue("name") String name, @Nullable Pageable pageable) {
+    public HttpResponse<?> listOrSearch(@Nullable @QueryValue("name") String name,
+                                        @Nullable Pageable pageable) {
         LOG.info("listOrSearch");
 
         Page<User> users = !Utilities.stringHasValue(name)
@@ -96,5 +110,86 @@ public class UserController extends BaseController {
     public HttpResponse<?> updateLifeCycleStatus(@PathVariable String uuid, @Body LifeCycleStatusDTO dto) {
         User updated = userService.updateLifeCycleStatus(uuid, dto.getLifeCycleStatus());
         return HttpResponse.ok(SuccessResponse.of("Estado do utilizador atualizado com sucesso", new UserDTO(updated)));
+    }
+
+    // ==========================================
+    // Gestão de ROLES do utilizador (NOVO)
+    // via UserServiceRole
+    // ==========================================
+
+    @Get("/{userUuid}/service-roles")
+    @Operation(summary = "Listar vínculos UserServiceRole do utilizador (paginado)")
+    public HttpResponse<?> listUserServiceRoles(@PathVariable String userUuid,
+                                                @Nullable Pageable pageable) {
+        Page<UserServiceRole> page = userServiceRoleService.findByUser(userUuid, resolvePageable(pageable));
+        List<UserServiceRoleDTO> dtos = page.getContent().stream()
+                .map(UserServiceRoleDTO::new)
+                .collect(Collectors.toList());
+
+        String message = page.getTotalSize() == 0 ? "Sem Dados para esta pesquisa" : "Dados encontrados";
+
+        return HttpResponse.ok(
+                PaginatedResponse.of(dtos, page.getTotalSize(), page.getPageable(), message)
+        );
+    }
+
+    @Get("/{userUuid}/roles")
+    @Operation(summary = "Listar apenas as roles do utilizador (derivado de UserServiceRole)")
+    public HttpResponse<?> listUserRoles(@PathVariable String userUuid,
+                                         @Nullable Pageable pageable) {
+        Page<UserServiceRole> page = userServiceRoleService.findByUser(userUuid, resolvePageable(pageable));
+
+        List<RoleDTO> roles = page.getContent().stream()
+                .map(usr -> new RoleDTO(usr.getRole()))
+                .collect(Collectors.toList());
+
+        String message = page.getTotalSize() == 0 ? "Sem Dados para esta pesquisa" : "Dados encontrados";
+
+        return HttpResponse.ok(
+                PaginatedResponse.of(roles, page.getTotalSize(), page.getPageable(), message)
+        );
+    }
+
+    @Post("/{userUuid}/roles/assign")
+    @Operation(summary = "Atribuir uma ou mais roles ao utilizador (escopo opcional por programActivityUuid)")
+    public HttpResponse<?> assignRoles(@PathVariable String userUuid,
+                                       @Body AssignUserRolesRequest request,
+                                       Authentication authentication) {
+        String actorUuid = (String) authentication.getAttributes().get("userUuid");
+        List<UserServiceRole> result = userServiceRoleService.assignRoles(
+                userUuid,
+                request.getProgramActivityUuid(),
+                request.getRoleUuids(),
+                actorUuid
+        );
+
+        List<UserServiceRoleDTO> dtos = result.stream().map(UserServiceRoleDTO::new).collect(Collectors.toList());
+        return HttpResponse.ok(SuccessResponse.of("Roles atribuídos com sucesso", dtos));
+    }
+
+    @Put("/{userUuid}/roles/replace")
+    @Operation(summary = "Substituir o conjunto de roles do utilizador num escopo (programActivity ou global)")
+    public HttpResponse<?> replaceRoles(@PathVariable String userUuid,
+                                        @Body ReplaceUserRolesRequest request,
+                                        Authentication authentication) {
+        String actorUuid = (String) authentication.getAttributes().get("userUuid");
+        List<UserServiceRole> result = userServiceRoleService.replaceRoles(
+                userUuid,
+                request.getProgramActivityUuid(),
+                request.getRoleUuids(),
+                actorUuid
+        );
+
+        List<UserServiceRoleDTO> dtos = result.stream().map(UserServiceRoleDTO::new).collect(Collectors.toList());
+        return HttpResponse.ok(SuccessResponse.of("Roles substituídos com sucesso", dtos));
+    }
+
+    @Delete("/{userUuid}/roles/{roleUuid}")
+    @Operation(summary = "Remover uma role do utilizador (escopo opcional por programActivityUuid)")
+    public HttpResponse<?> removeRole(@PathVariable String userUuid,
+                                      @PathVariable String roleUuid,
+                                      @Nullable @QueryValue("programActivityUuid") String programActivityUuid) {
+        userServiceRoleService.removeRole(userUuid, roleUuid, programActivityUuid);
+        return HttpResponse.ok(SuccessResponse.messageOnly("Role removida com sucesso"));
     }
 }

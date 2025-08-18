@@ -50,7 +50,7 @@ public class UserDTO extends PersonDTO {
         this.setUpdatedAt(user.getUpdatedAt());
         this.setUpdatedBy(user.getUpdatedBy());
         if (user.getLifeCycleStatus() != null) {
-            this.setLifeCycleStatus(user.getLifeCycleStatus().name());
+            this.setLifeCycleStatus(user.getStatus());
         }
     }
 
@@ -64,7 +64,7 @@ public class UserDTO extends PersonDTO {
         user.setCreatedBy(this.getCreatedBy());
         user.setUpdatedAt(this.getUpdatedAt());
         user.setUpdatedBy(this.getUpdatedBy());
-        user.setLifeCycleStatus(LifeCycleStatus.valueOf(this.getLifeCycleStatus()));
+        user.setLifeCycleStatus(LifeCycleStatus.valueOf(this.getStatus()));
 
         user.setSex(this.getSex());
         user.setBirthdate(this.getBirthdate() != null ? new Date(this.getBirthdate().getTime()) : null);

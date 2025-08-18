@@ -1,15 +1,14 @@
 package mz.org.csaude.comvida.backend.entity;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.micronaut.serde.annotation.Serdeable;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Type;
+import mz.org.fgh.mentoring.util.LifeCycleStatus;
+import org.hibernate.annotations.ColumnTransformer;
 
-import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -37,34 +36,36 @@ public class User extends Person {
     private String salt;
 
 
-    @Column(columnDefinition = "json")
+    @Column(columnDefinition = "jsonb")              // <- use jsonb
+    @ColumnTransformer(write = "?::jsonb")           // <- faz o cast na escrita
     private String attributes;
 
 
     public boolean isActive() {
-        return this.getLifeCycleStatus().equals(mz.org.fgh.mentoring.util.LifeCycleStatus.ACTIVE);
+        return this.getStatus().equals(String.valueOf(LifeCycleStatus.ACTIVE));
     }
 
-    public List<UserGroupRole> getUserGroupRoles() {
+    public List<UserServiceRole> getUserGroupRoles() {
         return null;
     }
 
-    @Transient
-    public Map<String, Object> getAttributesAsMap() {
-        if (this.attributes == null) return new HashMap<>();
+    @Transient @JsonIgnore
+    public List<Map<String, Object>> getAttributesAsMap() {
+        if (this.attributes == null || this.attributes.isBlank()) return new ArrayList<>();
         try {
-            return new ObjectMapper().readValue(this.attributes, Map.class);
-        } catch (IOException e) {
-            throw new RuntimeException("Erro ao ler JSON de atributos", e);
+            return objectMapper.readValue(this.attributes,
+                    new com.fasterxml.jackson.core.type.TypeReference<List<Map<String,Object>>>() {});
+        } catch (Exception e) {
+            return new ArrayList<>();
         }
     }
 
-    @Transient
-    public void setAttributesAsMap(Map<String, Object> map) {
+    @Transient @JsonIgnore
+    public void setAttributesAsMap(List<Map<String, Object>> map) {
         try {
-            this.attributes = new ObjectMapper().writeValueAsString(map);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Erro ao salvar JSON de atributos", e);
+            this.attributes = objectMapper.writeValueAsString(map != null ? map : new ArrayList<>());
+        } catch (Exception e) {
+            this.attributes = "[]";
         }
     }
 

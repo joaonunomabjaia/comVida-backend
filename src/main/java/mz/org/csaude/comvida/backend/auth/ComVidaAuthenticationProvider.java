@@ -8,13 +8,12 @@ import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
 import jakarta.inject.Singleton;
 import mz.org.csaude.comvida.backend.entity.User;
-import mz.org.csaude.comvida.backend.entity.UserGroupRole;
+import mz.org.csaude.comvida.backend.entity.UserServiceRole;
 import mz.org.csaude.comvida.backend.service.UserService;
 import mz.org.csaude.comvida.backend.util.Utilities;
 import org.reactivestreams.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import reactor.core.publisher.Mono;
 
 import java.util.*;
 
@@ -79,7 +78,7 @@ public class ComVidaAuthenticationProvider implements ReactiveAuthenticationProv
     private List<String> extractRoles(User user) {
         List<String> roles = new ArrayList<>();
         if (user.getUserGroupRoles() != null) {
-            for (UserGroupRole ugr : user.getUserGroupRoles()) {
+            for (UserServiceRole ugr : user.getUserGroupRoles()) {
                 if (ugr.getRole() != null && ugr.getRole().getName() != null) {
                     roles.add(ugr.getRole().getName());
                 }
