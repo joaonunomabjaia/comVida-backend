@@ -18,21 +18,21 @@ import java.util.Date;
 @AllArgsConstructor
 public abstract class BaseEntityDTO implements Serializable, RestAPIResponse {
 
-    private Long id;
+    protected Long id;
 
-    private String uuid;
+    protected String uuid;
 
-    private String lifeCycleStatus;
+    protected String lifeCycleStatus;
 
-    private String syncStatus;
+    protected String syncStatus;
 
-    private Date createdAt;
+    protected Date createdAt;
 
-    private Date updatedAt;
+    protected Date updatedAt;
 
-    private String createdBy;
+    protected String createdBy;
 
-    private String updatedBy;
+    protected String updatedBy;
 
     @Creator
     public BaseEntityDTO() {

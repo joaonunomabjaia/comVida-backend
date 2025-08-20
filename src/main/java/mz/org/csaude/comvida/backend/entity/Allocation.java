@@ -21,7 +21,7 @@ public class Allocation extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_service_role_id")
-    private UserGroupRole userServiceRole;
+    private UserServiceRole userServiceRole;
 
     @ManyToOne
     @JoinColumn(name = "assigned_by_user_id")

@@ -6,7 +6,7 @@ import io.micronaut.data.repository.CrudRepository;
 import jakarta.validation.constraints.NotNull;
 import mz.org.csaude.comvida.backend.entity.Allocation;
 import mz.org.csaude.comvida.backend.entity.CohortMember;
-import mz.org.csaude.comvida.backend.entity.UserGroupRole;
+import mz.org.csaude.comvida.backend.entity.UserServiceRole;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,7 +24,7 @@ public interface AllocationRepository extends CrudRepository<Allocation, Long> {
 
     List<Allocation> findByCohortMember(CohortMember cohortMember);
 
-    List<Allocation> findByUserServiceRole(UserGroupRole userServiceRole);
+    List<Allocation> findByUserServiceRole(UserServiceRole userServiceRole);
 
     @Query("SELECT a FROM Allocation a WHERE a.assignedBy.id = :userId")
     List<Allocation> findByAssignedByUserId(Long userId);

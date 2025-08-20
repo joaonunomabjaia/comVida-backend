@@ -1,5 +1,6 @@
 package mz.org.csaude.comvida.backend.base;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.core.annotation.Introspected;
 import io.micronaut.serde.annotation.Serdeable;
 import jakarta.persistence.*;
@@ -62,6 +63,8 @@ public abstract class BaseEntity implements RestAPIResponse, Serializable, Compa
             this.setLifeCycleStatus(LifeCycleStatus.valueOf(baseEntityDTO.getLifeCycleStatus()));
         }
     }
+
+    protected static final ObjectMapper objectMapper = new ObjectMapper();
 
     public BaseEntity(String uuid) {
         this.uuid = uuid;

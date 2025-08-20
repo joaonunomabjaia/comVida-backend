@@ -1,5 +1,6 @@
 package mz.org.csaude.comvida.backend.entity;
 
+import io.micronaut.core.annotation.Creator;
 import io.micronaut.serde.annotation.Serdeable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
@@ -13,26 +14,24 @@ import mz.org.csaude.comvida.backend.base.BaseEntity;
 @Getter
 @Setter
 @Serdeable.Deserializable
-@Table(name = "user_group_roles")
-public class UserGroupRole extends BaseEntity {
+@Table(name = "user_service_roles")
+public class UserServiceRole extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "group_id")
-    private Group group;
+    @JoinColumn(name = "program_activity_id")
+    private ProgramActivity programActivity;
 
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
 
-    public UserGroupRole(UserGroupRole userServiceRole) {
 
-    }
-
-    public UserGroupRole() {
+    @Creator
+    public UserServiceRole() {
 
     }
 }
