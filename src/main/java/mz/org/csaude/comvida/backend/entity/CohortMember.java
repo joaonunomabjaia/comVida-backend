@@ -15,7 +15,7 @@ import java.util.Date;
 @Setter
 @Serdeable
 @Table(name = "cohort_members")
-public class CohortMember extends BaseEntity {
+public class CohortMember extends BaseEntity { // Membro que entrou na cohort
 
     // Relacionamento com a coorte
     @ManyToOne
@@ -27,12 +27,12 @@ public class CohortMember extends BaseEntity {
     private String originId;
 
     // Data de inclusão na coorte [Caso o paciente venha da INTEGRATTION, inclusionDate sera igual ao createdAt, se vier do FILE, sera agendado no frontend]
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "inclusion_date")
     private Date inclusionDate;
 
     // Data de exclusão da coorte
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "exclusion_date")
     private Date exclusionDate;
 

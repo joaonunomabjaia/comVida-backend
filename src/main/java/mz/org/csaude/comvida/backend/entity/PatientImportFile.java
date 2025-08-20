@@ -22,7 +22,7 @@ public class PatientImportFile extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private ImportStatus status;
-    // PENDING, PROCESSING, DONE, FAILED
+    // PENDING, PROCESSING, DONE, FAILED, UPDATED, INTERRUPTED
 
     @Column(nullable = false)
     private Integer progress = 0; // 0 a 100 (% do processamento)
@@ -43,7 +43,8 @@ public class PatientImportFile extends BaseEntity {
         PROCESSING,
         PROCESSED,
         FAILED,
-//        PARTIALLY_FAILED
+        UPDATED,
+        INTERRUPTED
     }
 
 }

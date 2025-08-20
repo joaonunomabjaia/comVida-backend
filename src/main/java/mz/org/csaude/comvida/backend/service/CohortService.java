@@ -51,13 +51,6 @@ public class CohortService {
             // Buscar o primeiro membro (com menor createdAt, por exemplo)
             Optional<CohortMember> firstMember = cohortMemberRepository
                     .findFirstByCohortOrderByCreatedAtAsc(cohort);
-
-            firstMember.ifPresent(member -> {
-                dto.setInclusionDate(DateUtils.toLocalDateSafe(member.getInclusionDate()));
-                dto.setExclusionDate(DateUtils.toLocalDateSafe(member.getExclusionDate()));
-                dto.setMemberCreatedAt(DateUtils.toLocalDateSafe(member.getCreatedAt()));
-            });
-
             return dto;
         });
     }
@@ -113,10 +106,10 @@ public class CohortService {
 
         Cohort cohort = existing.get();
 
-        long count = cohortMemberRepository.countByCohort(cohort);
-        if (count > 0) {
-            throw new RecordInUseException("A coorte não pode ser eliminada porque está associada a um ou mais membros.");
-        }
+//        long count = cohortMemberRepository.countByCohort(cohort);
+//        if (count > 0) {
+//            throw new RecordInUseException("A coorte não pode ser eliminada porque está associada a um ou mais membros.");
+//        }
 
         repository.delete(cohort);
     }

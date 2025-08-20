@@ -921,6 +921,7 @@
     </changeSet>
 
     <changeSet id="add-column-program_activity_id" author="JNMabjaia">
+
     <addColumn tableName="cohorts">
         <column name="program_activity_id" type="BIGINT" defaultValueNumeric="1">
             <constraints nullable="false"/>
@@ -1021,5 +1022,26 @@
         </sql>
     </changeSet>
 
+    <changeSet id="add-program-activity-to-patient-import-configurations" author="joao.mabjaia">
+        <addColumn tableName="patient_import_configurations">
+            <column name="program_activity_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint
+                baseTableName="patient_import_configurations"
+                baseColumnNames="program_activity_id"
+                referencedTableName="program_activities"
+                referencedColumnNames="id"
+                constraintName="fk_patient_import_config_program_activity"/>
+    </changeSet>
+
+    <changeSet id="make-entry-date-nullable" author="joao.mabjaia">
+        <dropNotNullConstraint
+                tableName="patient_import_configurations"
+                columnName="entry_date"
+                columnDataType="date"/>
+    </changeSet>
 
 </databaseChangeLog>

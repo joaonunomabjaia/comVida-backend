@@ -52,11 +52,19 @@ public class EligibilityCriteriaController extends BaseController {
                 .collect(Collectors.toList());
 
         String message = page.getTotalSize() == 0
-                ? "Sem dados para esta pesquisa"
-                : "Dados encontrados com sucesso";
+                ? "Sem critérios de elegibilidade encontrados"
+                : "Critérios de elegibilidade encontrados com sucesso";
 
-        return HttpResponse.ok(PaginatedResponse.of(dtos, page.getTotalSize(), page.getPageable(), message));
+        return HttpResponse.ok(
+                PaginatedResponse.of(
+                        dtos,
+                        page.getTotalSize(),
+                        page.getPageable(),
+                        message
+                )
+        );
     }
+
 
     @Operation(summary = "Buscar critério de elegibilidade por ID")
     @Get("/{id}")
@@ -66,38 +74,4 @@ public class EligibilityCriteriaController extends BaseController {
                 HttpResponse.ok(SuccessResponse.of("Critério encontrado com sucesso", new EligibilityCriteriaDTO(eligibilityCriteria)))
         ).orElse(HttpResponse.notFound());
     }
-
-//    @Operation(summary = "Criar novo critério de elegibilidade")
-//    @Post
-//    public HttpResponse<?> create(@Body EligibilityCriteriaDTO dto, Authentication authentication) {
-//        String userUuid = (String) authentication.getAttributes().get("userUuid");
-//        EligibilityCriteria entity = dto.toEntity();
-//        entity.setCreatedBy(userUuid);
-//        EligibilityCriteria saved = service.create(entity);
-//        return HttpResponse.created(SuccessResponse.of("Critério criado com sucesso", new EligibilityCriteriaDTO(saved)));
-//    }
-
-//    @Operation(summary = "Actualizar critério de elegibilidade existente")
-//    @Put
-//    public HttpResponse<?> update(@Body EligibilityCriteriaDTO dto, Authentication authentication) {
-//        String userUuid = (String) authentication.getAttributes().get("userUuid");
-//        EligibilityCriteria entity = dto.toEntity();
-//        entity.setUpdatedBy(userUuid);
-//        EligibilityCriteria updated = service.update(entity);
-//        return HttpResponse.ok(SuccessResponse.of("Critério actualizado com sucesso", new EligibilityCriteriaDTO(updated)));
-//    }
-//
-//    @Operation(summary = "Eliminar critério de elegibilidade por UUID")
-//    @Delete("/{uuid}")
-//    public HttpResponse<?> delete(@PathVariable String uuid) {
-//        service.delete(uuid);
-//        return HttpResponse.ok(SuccessResponse.messageOnly("Critério eliminado com sucesso"));
-//    }
-
-//    @Operation(summary = "Actualizar o estado (ativo/inativo) de um critério de elegibilidade")
-//    @Put("/{uuid}/status")
-//    public HttpResponse<?> updateLifeCycleStatus(@PathVariable String uuid, @Body LifeCycleStatusDTO dto) {
-//        EligibilityCriteria updated = service.updateLifeCycleStatus(uuid, dto.getLifeCycleStatus());
-//        return HttpResponse.ok(SuccessResponse.of("Estado do critério atualizado com sucesso", new EligibilityCriteriaDTO(updated)));
-//    }
 }

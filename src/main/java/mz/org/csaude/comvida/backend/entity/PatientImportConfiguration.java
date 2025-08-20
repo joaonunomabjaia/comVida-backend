@@ -23,8 +23,12 @@ public class PatientImportConfiguration extends BaseEntity {
     @JoinColumn(name = "import_file_id", nullable = false)
     private PatientImportFile importFile;
 
+    @ManyToOne
+    @JoinColumn(name = "program_activity_id", nullable = false)
+    private ProgramActivity programActivity;
+
     @Temporal(TemporalType.DATE)
-    @Column(name = "entry_date", nullable = false)
+    @Column(name = "entry_date")
     private Date entryDate;
 
     @Temporal(TemporalType.DATE)

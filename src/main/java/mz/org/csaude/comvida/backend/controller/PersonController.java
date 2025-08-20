@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.inject.Inject;
 import mz.org.csaude.comvida.backend.api.RESTAPIMapping;
+import mz.org.csaude.comvida.backend.base.BaseController;
 import mz.org.csaude.comvida.backend.dto.PersonDTO;
 import mz.org.csaude.comvida.backend.entity.Person;
 import mz.org.csaude.comvida.backend.error.ComVidaAPIError;
@@ -27,28 +28,12 @@ import java.util.Optional;
 @Secured(SecurityRule.IS_AUTHENTICATED)
 @Controller(RESTAPIMapping.PERSON_CONTROLLER)
 @Tag(name = "Person", description = "API for managing persons")
-public class PersonController {
+public class PersonController extends BaseController {
 
     @Inject
     private PersonService personService;
 
     public static final Logger LOG = LoggerFactory.getLogger(PersonController.class);
-
-//    @Operation(summary = "Retrieve all persons with pagination")
-//    @ApiResponse(responseCode = "200", description = "Persons retrieved successfully")
-//    @Get
-//    public HttpResponse<?> getAll(@Nullable Pageable pageable) {
-//        try {
-//            Page<PersonDTO> persons = personService.findAll(pageable);
-//            return HttpResponse.ok(persons);
-//        } catch (Exception e) {
-//            LOG.error(e.getMessage(), e);
-//            return HttpResponse.badRequest().body(ComVidaAPIError.builder()
-//                    .status(HttpStatus.BAD_REQUEST.getCode())
-//                    .error(e.getLocalizedMessage())
-//                    .message(e.getMessage()).build());
-//        }
-//    }
 
     @Operation(summary = "Find person by ID")
     @ApiResponse(responseCode = "200", description = "Person found")

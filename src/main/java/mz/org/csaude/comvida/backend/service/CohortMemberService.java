@@ -1,10 +1,12 @@
 package mz.org.csaude.comvida.backend.service;
 
+import io.micronaut.core.annotation.Nullable;
 import io.micronaut.data.model.Page;
 import io.micronaut.data.model.Pageable;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import jakarta.transaction.Transactional;
+import mz.org.csaude.comvida.backend.dto.CohortMemberDTO;
 import mz.org.csaude.comvida.backend.dto.CohortWithMembersDTO;
 import mz.org.csaude.comvida.backend.entity.*;
 import mz.org.csaude.comvida.backend.repository.CohortMemberRepository;
@@ -18,7 +20,6 @@ import mz.org.csaude.comvida.backend.util.Utilities;
 import mz.org.fgh.mentoring.util.LifeCycleStatus;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -62,8 +63,8 @@ public class CohortMemberService extends BaseService {
 
 
 
-    public List<CohortMember> findAll() {
-        return cohortMemberRepository.findAll();
+    public Page<CohortMember> findAll(@Nullable Pageable pageable) {
+        return cohortMemberRepository.findAll(pageable);
     }
 
     public Optional<CohortMember> findById(Long id) {
@@ -81,15 +82,15 @@ public class CohortMemberService extends BaseService {
         return cohortMemberRepository.save(cohortMember);
     }
 
-    public void createFromExcel(String patientUUID, String cohortDescription, String sourceName) {
-        Patient patient = patientService.findByUuid(patientUUID)
-                .orElseThrow(() -> new IllegalArgumentException("Paciente não encontrado: " + patientUUID));
+    public void createFromExcel(String patientOriginId, String cohortDescription, PatientImportFile file) {
+        Patient patient = patientService.findByUuid(patientOriginId)
+                .orElseThrow(() -> new IllegalArgumentException("Paciente não encontrado: " + patientOriginId));
 //
         Cohort cohort = cohortService.findByDescription(cohortDescription)
                 .orElseThrow(() -> new IllegalArgumentException("Cohort não encontrado: " + cohortDescription));
 //
-        SourceSystem source = sourceSystemService.findByCode(sourceName)
-                .orElseThrow(() -> new IllegalArgumentException("Fonte não encontrada: " + sourceName));
+        SourceSystem source = sourceSystemService.findByCode(file.getSourceSystem().getCode())
+                .orElseThrow(() -> new IllegalArgumentException("Fonte não encontrada: " + file.getSourceSystem().getCode()));
 
         CohortMember member = new CohortMember();
         member.setPatient(patient);
@@ -97,11 +98,12 @@ public class CohortMemberService extends BaseService {
         member.setSourceSystem(source);
         member.setInclusionDate(DateUtils.getCurrentDate());
         member.setCreatedAt(DateUtils.getCurrentDate());
-        member.setOriginId("Importação via Excel");
+        member.setOriginId(patientOriginId);
         member.setSourceType(SourceTypeEnum.FILE);
         member.setLifeCycleStatus(LifeCycleStatus.ACTIVE);
         member.setCreatedBy("System");
         member.setUuid(Utilities.generateUUID());
+        member.setPatientImportFile(file);
 
         cohortMemberRepository.save(member);
     }
@@ -132,4 +134,26 @@ public class CohortMemberService extends BaseService {
         Optional<CohortMember> existing = cohortMemberRepository.findByUuid(uuid);
         existing.ifPresent(cohortMemberRepository::delete);
     }
+
+    public Page<CohortMember> findByCohortId(Long cohortId, Pageable pageable) {
+        return cohortMemberRepository.findByCohortId(cohortId, pageable);
+    }
+
+    public Page<CohortMember> findByPatientIportFileId(Long patientImportFileId, Pageable pageable) {
+        return cohortMemberRepository.findByPatientImportFileId(patientImportFileId, pageable);
+    }
+
+    public Page<CohortMember> findByCohortIdAndPatientImportFileId(Long cohortId, Long patientImportFileId, Pageable pageable) {
+        return cohortMemberRepository.findByCohortIdAndPatientImportFileId(cohortId, patientImportFileId, pageable);
+    }
+
+    public Page<CohortMember> searchByActivity(@Nullable String activityId, Pageable pageable) {
+        return cohortMemberRepository.findByProgramActivityId(activityId, pageable);
+    }
+
+    public List<CohortMember> findByCohortIdAndPatientImportFileId(Long cohortId, Long patientImportFileId) {
+//        return cohortMemberRepository.findByCohortIdAndPatientImportFileId(cohortId, patientImportFileId);
+        return null;
+    }
+
 }

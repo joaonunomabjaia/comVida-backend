@@ -16,4 +16,6 @@ public interface ProgramActivityRepository extends JpaRepository<ProgramActivity
     Page<ProgramActivity> findByNameIlike(String name, Pageable pageable);
 
     long countByProgram(Program program);
+
+    Optional<ProgramActivity> findByName(String programActivityName);
 }

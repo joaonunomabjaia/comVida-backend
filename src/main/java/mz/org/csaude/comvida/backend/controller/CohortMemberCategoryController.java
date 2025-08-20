@@ -4,6 +4,7 @@ import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.*;
 import jakarta.inject.Inject;
 import mz.org.csaude.comvida.backend.api.RESTAPIMapping;
+import mz.org.csaude.comvida.backend.base.BaseController;
 import mz.org.csaude.comvida.backend.entity.CohortMemberCategory;
 import mz.org.csaude.comvida.backend.service.CohortMemberCategoryService;
 
@@ -11,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Controller(RESTAPIMapping.COHORT_MEMBER_CATEGORY_CONTROLLER)
-public class CohortMemberCategoryController {
+public class CohortMemberCategoryController extends BaseController {
 
     @Inject
     private CohortMemberCategoryService service;

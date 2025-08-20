@@ -100,4 +100,7 @@ public class ProgramActivityService extends BaseService {
         return programActivityRepository.update(programActivity);
     }
 
+    public Optional<ProgramActivity> findByName(String programActivityName) {
+        return programActivityRepository.findByName(programActivityName);
+    }
 }

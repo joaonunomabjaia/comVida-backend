@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface PatientImportFileRepository extends CrudRepository<PatientImportFile, Long> {
 
-    List<PatientImportFile> findByStatus(PatientImportFile.ImportStatus importStatus);
+    List<PatientImportFile> findByStatusIn(List<PatientImportFile.ImportStatus> statusList);
 
     Page<PatientImportFile> findByStatusIn(List<PatientImportFile.ImportStatus> statusList, Pageable pageable);
 

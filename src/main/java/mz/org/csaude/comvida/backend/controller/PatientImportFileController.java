@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.inject.Inject;
 import mz.org.csaude.comvida.backend.api.RESTAPIMapping;
+import mz.org.csaude.comvida.backend.api.response.PaginatedResponse;
 import mz.org.csaude.comvida.backend.base.BaseController;
 import mz.org.csaude.comvida.backend.dto.PatientImportFileDTO;
 import mz.org.csaude.comvida.backend.dto.SheetImportStatusDTO;
@@ -60,6 +61,27 @@ public class PatientImportFileController extends BaseController {
         }
     }
 
+    @Put(uri = "/upload-excel", consumes = MediaType.MULTIPART_FORM_DATA)
+    public HttpResponse<?> updateExcel(
+            @Part("file") CompletedFileUpload file,
+            @Part("dto") String rawDtoJson,
+            Authentication authentication
+    ) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            PatientImportFileDTO dto = mapper.readValue(rawDtoJson, PatientImportFileDTO.class);
+            String userUuid = (String) authentication.getAttributes().get("userUuid");
+
+            // Aqui o service pode ter um método updateExcelUpload(...) que trata diferente de processExcelUpload(...)
+            PatientImportFile updated = importService.updateExcelUpload(file, dto, userUuid, dto.getSourceSystem().getId());
+
+            return HttpResponse.ok("Ficheiro atualizado com sucesso.");
+        } catch (Exception e) {
+            return buildErrorResponse(e);
+        }
+    }
+
+
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
     public HttpResponse<PatientImportFile> getById(@PathVariable Long id) {
         Optional<PatientImportFile> result = importService.findById(id);
@@ -82,15 +104,31 @@ public class PatientImportFileController extends BaseController {
 
     @Operation(summary = "List or search")
     @Get
-    public HttpResponse<Page<PatientImportFileDTO>> listPaginated(
+    public HttpResponse<?> listPaginated(
             @QueryValue(defaultValue = "0") int page,
             @QueryValue(defaultValue = "20") int size,
             @QueryValue("status") List<String> statuses,
             @QueryValue(defaultValue = "") String name
     ) {
         Pageable pageable = Pageable.from(page, size, Sort.of(Sort.Order.desc("createdAt")));
-        Page<PatientImportFileDTO> pagedResult = importService.findAllPaginated(statuses, name, pageable);
-        return HttpResponse.ok(pagedResult);
+        Page<PatientImportFile> pagedResult = importService.findAllPaginated(statuses, name, pageable);
+
+        List<PatientImportFileDTO> patientImportFiles = pagedResult.getContent().stream()
+                .map(PatientImportFileDTO::new)
+                .toList();
+
+        String message = pagedResult.getTotalSize() == 0
+                ? "Sem Dados para esta pesquisa"
+                : "Dados encontrados";
+
+        return HttpResponse.ok(
+                PaginatedResponse.of(
+                        patientImportFiles, // sempre passar lista (mesmo vazia)
+                        pagedResult.getTotalSize(),
+                        pagedResult.getPageable(),
+                        message
+                )
+        );
     }
 
     @Get("/{id}/sheets")

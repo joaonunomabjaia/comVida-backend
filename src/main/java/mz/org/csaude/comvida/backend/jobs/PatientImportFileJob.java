@@ -7,7 +7,6 @@ import jakarta.inject.Singleton;
 import jakarta.inject.Inject;
 import mz.org.csaude.comvida.backend.service.PatientImportFileService;
 import mz.org.csaude.comvida.backend.service.SettingService;
-import mz.org.csaude.comvida.backend.entity.Setting;
 
 import java.util.concurrent.*;
 
@@ -39,7 +38,7 @@ public class PatientImportFileJob {
 
         scheduler.schedule(() -> {
             try {
-                importFileService.processPendingFiles();
+                importFileService.filesToBeProcessed();
             } catch (Exception e) {
                 System.err.println("Erro ao processar ficheiros pendentes: " + e.getMessage());
             } finally {
