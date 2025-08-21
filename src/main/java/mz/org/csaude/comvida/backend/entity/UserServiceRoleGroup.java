@@ -26,7 +26,7 @@ public class UserServiceRoleGroup extends BaseEntity {
     @JoinColumn(name = "user_service_role_id", nullable = false)
     private UserServiceRole userServiceRole;
 
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @ManyToOne(optional = false, fetch = FetchType.EAGER)
     @JoinColumn(name = "group_id", nullable = false)
     private Group group;
 

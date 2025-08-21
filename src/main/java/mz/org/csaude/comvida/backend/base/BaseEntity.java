@@ -13,6 +13,7 @@ import mz.org.csaude.comvida.backend.util.Utilities;
 import mz.org.fgh.mentoring.util.LifeCycleStatus;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.Objects;
 import java.util.UUID;
 
 @Data
@@ -105,4 +106,37 @@ public abstract class BaseEntity implements RestAPIResponse, Serializable, Compa
         }
         return this.createdAt.compareTo(other.getCreatedAt());
     }
+
+    // BaseEntity.java
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+
+        // cuidado com proxies do Hibernate
+        Class<?> thisClass = org.hibernate.Hibernate.getClass(this);
+        Class<?> thatClass = org.hibernate.Hibernate.getClass(o);
+        if (thisClass != thatClass) return false;
+
+        BaseEntity that = (BaseEntity) o;
+
+        if (this.id != null && that.id != null) {
+            return Objects.equals(this.id, that.id);
+        }
+        if (this.uuid != null && that.uuid != null) {
+            return Objects.equals(this.uuid, that.uuid);
+        }
+
+        // objetos transitórios: não são iguais entre si
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        if (id != null) return Objects.hash(id);
+        if (uuid != null) return uuid.hashCode();
+        // identidade do objeto para transitórios
+        return System.identityHashCode(this);
+    }
+
 }
