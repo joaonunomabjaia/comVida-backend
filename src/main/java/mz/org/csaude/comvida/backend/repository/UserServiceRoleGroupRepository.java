@@ -9,6 +9,7 @@ import mz.org.csaude.comvida.backend.entity.UserServiceRole;
 import mz.org.csaude.comvida.backend.entity.UserServiceRoleGroup;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface UserServiceRoleGroupRepository  extends JpaRepository<UserServiceRoleGroup, Long> {
@@ -24,4 +25,5 @@ public interface UserServiceRoleGroupRepository  extends JpaRepository<UserServi
     boolean existsByUserServiceRoleAndGroupAndIdNot(UserServiceRole userServiceRole, Group group, Long id);
 
     Page<UserServiceRoleGroup> findByUserServiceRole(UserServiceRole userServiceRole, Pageable pageable);
+    Set<UserServiceRoleGroup> findByUserServiceRole(UserServiceRole userServiceRole);
 }

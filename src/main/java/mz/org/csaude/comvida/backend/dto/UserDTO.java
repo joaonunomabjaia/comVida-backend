@@ -7,33 +7,39 @@ import io.micronaut.serde.annotation.Serdeable;
 import lombok.Getter;
 import lombok.Setter;
 import mz.org.csaude.comvida.backend.entity.User;
+import mz.org.csaude.comvida.backend.entity.UserServiceRole;
 import mz.org.fgh.mentoring.util.LifeCycleStatus;
 
-import java.io.IOException;
 import java.sql.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
+/**
+ * User DTO:
+ * - attributes: List<Map<...>>  (matches JSONB array on the entity)
+ * - userServiceRoles: top-level list (NOT inside attributes)
+ */
 @Getter
 @Setter
 @Serdeable
 public class UserDTO extends PersonDTO {
 
     private String username;
-    private String password;
-    private String status;
+    private String password;              // only set when provided by UI
+    private String status;                // e.g. "ACTIVE" / "INACTIVE"
     private Boolean shouldResetPassword;
     private String salt;
 
-    // Agora é uma string JSON
-    private String attributes;
+    /** JSONB attributes (array of objects) */
+    private List<Map<String, Object>> attributes = new ArrayList<>();
 
-    private static final ObjectMapper mapper = new ObjectMapper();
+    /** Top-level roles from UI */
+    private List<UserServiceRoleDTO> userServiceRoles = new ArrayList<>();
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @Creator
-    public UserDTO() {
-        super();
-    }
+    public UserDTO() { super(); }
 
     public UserDTO(User user) {
         super(user);
@@ -43,14 +49,24 @@ public class UserDTO extends PersonDTO {
         this.status = user.getStatus();
         this.shouldResetPassword = user.getShouldResetPassword();
         this.salt = user.getSalt();
-        this.attributes = user.getAttributes(); // agora é String
 
+        // JSONB -> list of maps
+        this.attributes = user.getAttributesAsMap();
+
+        // lifecycle/status
+        if (user.getLifeCycleStatus() != null) {
+            this.setLifeCycleStatus(user.getLifeCycleStatus().name());
+        }
         this.setCreatedAt(user.getCreatedAt());
         this.setCreatedBy(user.getCreatedBy());
         this.setUpdatedAt(user.getUpdatedAt());
         this.setUpdatedBy(user.getUpdatedBy());
-        if (user.getLifeCycleStatus() != null) {
-            this.setLifeCycleStatus(user.getStatus());
+
+        // entity roles -> DTO roles
+        if (user.getUserServiceRoles() != null) {
+            this.userServiceRoles = user.getUserServiceRoles().stream()
+                    .map(UserServiceRoleDTO::new)
+                    .collect(Collectors.toList());
         }
     }
 
@@ -58,53 +74,58 @@ public class UserDTO extends PersonDTO {
     public User toEntity() {
         User user = new User();
 
+        // BaseEntity / audit
         user.setId(this.getId());
         user.setUuid(this.getUuid());
         user.setCreatedAt(this.getCreatedAt());
         user.setCreatedBy(this.getCreatedBy());
         user.setUpdatedAt(this.getUpdatedAt());
         user.setUpdatedBy(this.getUpdatedBy());
-        user.setLifeCycleStatus(LifeCycleStatus.valueOf(this.getStatus()));
 
+        // Lifecycle + status
+        LifeCycleStatus lcs = LifeCycleStatus.ACTIVE;
+        if (this.getLifeCycleStatus() != null && !this.getLifeCycleStatus().isBlank()) {
+            lcs = LifeCycleStatus.valueOf(this.getLifeCycleStatus());
+        }
+        user.setLifeCycleStatus(lcs);
+        user.setStatus(this.status != null ? this.status : lcs.name());
+
+        // Person fields
         user.setSex(this.getSex());
         user.setBirthdate(this.getBirthdate() != null ? new Date(this.getBirthdate().getTime()) : null);
 
-        // Conversões de JSON
+        // Person JSON lists -> JSON strings for entity
         try {
-            user.setNames(mapper.writeValueAsString(this.getNames()));
-            user.setAddress(mapper.writeValueAsString(this.getAddress()));
-            user.setPersonAttributes(mapper.writeValueAsString(this.getPersonAttributes()));
+            user.setNames(MAPPER.writeValueAsString(this.getNames() != null ? this.getNames() : List.of()));
+            user.setAddress(MAPPER.writeValueAsString(this.getAddress() != null ? this.getAddress() : List.of()));
+            user.setPersonAttributes(MAPPER.writeValueAsString(this.getPersonAttributes() != null ? this.getPersonAttributes() : List.of()));
         } catch (JsonProcessingException e) {
             user.setNames("[]");
             user.setAddress("[]");
-            user.setPersonAttributes("{}");
+            user.setPersonAttributes("[]");
         }
 
+        // User fields
         user.setUsername(this.username);
-        user.setPassword(this.password);
-        user.setStatus(this.status);
+        user.setPassword(this.password); // service/controller may handle blank on update
         user.setShouldResetPassword(this.shouldResetPassword);
         user.setSalt(this.salt);
-        user.setAttributes(this.attributes); // já é String
+
+        // JSONB attributes (array)
+        user.setAttributesAsMap(this.attributes != null ? this.attributes : new ArrayList<>());
+
+        // ✅ DTO roles -> entity roles as a Set (entity expects Set<UserServiceRole>)
+        if (this.userServiceRoles != null && !this.userServiceRoles.isEmpty()) {
+            Set<UserServiceRole> roles =
+                    this.userServiceRoles.stream()
+                            .map(UserServiceRoleDTO::toEntity)
+                            .peek(r -> r.setUser(user)) // backref
+                            .collect(Collectors.toCollection(LinkedHashSet::new));
+            user.setUserServiceRoles(roles);
+        } else {
+            user.setUserServiceRoles(new LinkedHashSet<>());
+        }
 
         return user;
-    }
-
-    // Métodos auxiliares opcionais
-    public Map<String, Object> getAttributesAsMap() {
-        if (this.attributes == null) return new HashMap<>();
-        try {
-            return mapper.readValue(this.attributes, Map.class);
-        } catch (IOException e) {
-            return new HashMap<>();
-        }
-    }
-
-    public void setAttributesAsMap(Map<String, Object> map) {
-        try {
-            this.attributes = mapper.writeValueAsString(map);
-        } catch (JsonProcessingException e) {
-            this.attributes = "{}";
-        }
     }
 }

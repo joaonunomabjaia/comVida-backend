@@ -1,6 +1,7 @@
 package mz.org.csaude.comvida.backend.dto;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.serde.annotation.Serdeable;
 import lombok.Getter;
@@ -11,17 +12,26 @@ import mz.org.fgh.mentoring.util.LifeCycleStatus;
 
 import java.util.*;
 
+/**
+ * PersonDTO
+ * - Entidade Person guarda JSON como String; aqui expomos como List<Map<String,Object>>.
+ * - fullName é SEMPRE a concatenação do nome preferido (firstName/givenName + lastName/familyName).
+ * - A flag do preferido aceita "preferred", "prefered", "isPreferred", "primary", "default", "preferido", "principal".
+ */
 @Getter
 @Setter
 @Serdeable
 public class PersonDTO extends BaseEntityDTO {
 
+    /** JSON arrays em formato estruturado */
     private List<Map<String, Object>> names;
     private List<Map<String, Object>> address;
+    private List<Map<String, Object>> personAttributes;
+
     private String sex;
     private Date birthdate;
-    private Map<String, Object> personAttributes;
 
+    /** Campos derivados/achatados (conveniência) */
     private String firstName;
     private String lastName;
     private String fullName;
@@ -31,37 +41,53 @@ public class PersonDTO extends BaseEntityDTO {
     private String province;
     private String fullAddress;
 
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final TypeReference<List<Map<String, Object>>> LIST_OF_MAPS = new TypeReference<>() {};
+    private static final List<String> PREFERRED_FLAGS = List.of(
+            "preferred", "prefered", "isPreferred", "primary", "default", "preferido", "principal"
+    );
 
     public PersonDTO() {}
 
     public PersonDTO(Person person) {
         super(person);
 
-        // Conversões JSON -> Objeto
-        this.names = parseList(person.getNames());
-        this.address = parseList(person.getAddress());
-        this.personAttributes = parseMap(person.getPersonAttributes());
+        this.names            = parseList(person.getNames());
+        this.address          = parseList(person.getAddress());
+        this.personAttributes = parseList(person.getPersonAttributes());
 
-        this.sex = person.getSex();
+        this.sex       = person.getSex();
         this.birthdate = person.getBirthdate();
 
-        if (names != null && !names.isEmpty()) {
+        // ======= NAMES (preferido) =======
+        Map<String, Object> pref = pickPreferred(this.names);
+        if (pref != null) {
+            this.firstName = firstNonBlank(
+                    str(pref, "firstName"), str(pref, "givenName"), str(pref, "first")
+            );
+            this.lastName = firstNonBlank(
+                    str(pref, "lastName"), str(pref, "familyName"), str(pref, "last")
+            );
+            this.fullName = joinWithSpace(this.firstName, this.lastName);
+        } else if (names != null && !names.isEmpty()) {
             Map<String, Object> first = names.get(0);
-            this.firstName = String.valueOf(first.getOrDefault("firstName", ""));
-            this.lastName = String.valueOf(first.getOrDefault("lastName", ""));
-            this.fullName = String.format("%s %s", firstName, lastName).trim();
+            this.firstName = firstNonBlank(
+                    str(first, "firstName"), str(first, "givenName"), str(first, "first")
+            );
+            this.lastName = firstNonBlank(
+                    str(first, "lastName"), str(first, "familyName"), str(first, "last")
+            );
+            this.fullName = joinWithSpace(this.firstName, this.lastName);
         }
 
+        // ======= ADDRESS (primeiro item) =======
         if (address != null && !address.isEmpty()) {
             Map<String, Object> addr = address.get(0);
-            this.addressLine1 = String.valueOf(addr.getOrDefault("addressLine1", ""));
-            this.city = String.valueOf(addr.getOrDefault("city", ""));
-            this.district = String.valueOf(addr.getOrDefault("district", ""));
-            this.province = String.valueOf(addr.getOrDefault("province", ""));
-            this.fullAddress = String.join(", ",
-                    Arrays.asList(addressLine1, city, district, province)
-                            .stream().filter(s -> s != null && !s.isBlank()).toList());
+            this.addressLine1 = str(addr, "addressLine1");
+            this.city         = str(addr, "city");
+            this.district     = str(addr, "district");
+            this.province     = str(addr, "province");
+            this.fullAddress  = joinWithComma(addressLine1, city, district, province);
         }
     }
 
@@ -74,47 +100,92 @@ public class PersonDTO extends BaseEntityDTO {
         person.setSex(this.sex);
         person.setBirthdate(this.birthdate);
 
-        // Conversões Objeto -> JSON
-        person.setNames(writeJson(names));
-        person.setAddress(writeJson(address));
-        person.setPersonAttributes(writeJson(personAttributes));
+        // Escreve as listas de volta como JSON String
+        person.setNames(writeJson(this.names));
+        person.setAddress(writeJson(this.address));
+        person.setPersonAttributes(writeJson(this.personAttributes));
 
         person.setCreatedAt(this.getCreatedAt());
         person.setCreatedBy(this.getCreatedBy());
         person.setUpdatedAt(this.getUpdatedAt());
         person.setUpdatedBy(this.getUpdatedBy());
 
-        if (this.getLifeCycleStatus() != null) {
-            person.setLifeCycleStatus(LifeCycleStatus.valueOf(this.getLifeCycleStatus()));
+        if (this.getLifeCycleStatus() != null && !this.getLifeCycleStatus().isBlank()) {
+            try {
+                person.setLifeCycleStatus(LifeCycleStatus.valueOf(this.getLifeCycleStatus()));
+            } catch (IllegalArgumentException ex) {
+                // Ignora valor inválido para não quebrar a conversão
+            }
         }
 
         return person;
     }
 
-    // Utilitários JSON
+    /* ===================== Helpers ===================== */
+
     private List<Map<String, Object>> parseList(String json) {
         if (json == null || json.isBlank()) return new ArrayList<>();
         try {
-            return mapper.readValue(json, List.class);
+            return MAPPER.readValue(json, LIST_OF_MAPS);
         } catch (JsonProcessingException e) {
             return new ArrayList<>();
         }
     }
 
-    private Map<String, Object> parseMap(String json) {
-        if (json == null || json.isBlank()) return new HashMap<>();
+    private String writeJson(Object obj) {
         try {
-            return mapper.readValue(json, Map.class);
+            return obj != null ? MAPPER.writeValueAsString(obj) : "[]";
         } catch (JsonProcessingException e) {
-            return new HashMap<>();
+            return "[]";
         }
     }
 
-    private String writeJson(Object obj) {
-        try {
-            return obj != null ? mapper.writeValueAsString(obj) : null;
-        } catch (JsonProcessingException e) {
-            return null;
+    /** Escolhe o primeiro item marcado como preferido; se nenhum, devolve null. */
+    private Map<String, Object> pickPreferred(List<Map<String, Object>> list) {
+        if (list == null) return null;
+        for (Map<String, Object> m : list) {
+            if (m == null) continue;
+            for (String key : PREFERRED_FLAGS) {
+                Object v = m.get(key);
+                if (v instanceof Boolean && (Boolean) v) return m;
+                if (v instanceof String && "true".equalsIgnoreCase((String) v)) return m;
+                if (v instanceof Number && ((Number) v).intValue() == 1) return m;
+            }
         }
+        return null;
+    }
+
+    /** Primeira string não vazia. */
+    private String firstNonBlank(String... values) {
+        if (values == null) return null;
+        for (String v : values) {
+            if (v != null && !v.isBlank()) return v;
+        }
+        return null;
+    }
+
+    /** Acessa mapa como string (null se vazio). */
+    private String str(Map<String, Object> m, String key) {
+        if (m == null) return null;
+        Object v = m.get(key);
+        if (v == null) return null;
+        String s = String.valueOf(v);
+        return s.isBlank() ? null : s;
+    }
+
+    /** Junta com espaço, ignorando nulos/vazios. */
+    private String joinWithSpace(String... parts) {
+        if (parts == null) return null;
+        List<String> valid = new ArrayList<>();
+        for (String p : parts) if (p != null && !p.isBlank()) valid.add(p.trim());
+        return String.join(" ", valid).trim();
+    }
+
+    /** Junta com vírgula, ignorando nulos/vazios. */
+    private String joinWithComma(String... parts) {
+        if (parts == null) return null;
+        List<String> valid = new ArrayList<>();
+        for (String p : parts) if (p != null && !p.isBlank()) valid.add(p.trim());
+        return String.join(", ", valid).trim();
     }
 }
