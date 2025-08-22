@@ -13,6 +13,7 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
+
     Page<User> findAll(Pageable pageable);
 
     Page<User> findByUsernameIlike(String username, Pageable pageable);
@@ -26,6 +27,18 @@ public interface UserRepository extends JpaRepository<User, Long> {
         where u.id in (:ids)
     """)
     List<User> findByIdInFetchRoles(Collection<Long> ids);
+
+    // ✅ explicit fetch-graph by UUID (name can be anything when using @Query)
+    @Query("""
+        select u from User u
+          left join fetch u.userServiceRoles usr
+          left join fetch usr.role r
+          left join fetch usr.programActivity pa
+          left join fetch usr.userServiceRoleGroups usrg
+          left join fetch usrg.group g
+        where u.uuid = :uuid
+    """)
+    Optional<User> fetchByUuidWithGraph(String uuid);
 
     @Query("""
         select u from User u
