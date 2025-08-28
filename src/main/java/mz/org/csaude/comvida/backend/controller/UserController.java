@@ -219,4 +219,21 @@ public class UserController extends BaseController {
         ValidateImportResultDTO res = userService.validateImport(rows);
         return HttpResponse.ok(SuccessResponse.of("Validação concluída", res));
     }
+    @Get("/by-roles")
+    @Operation(summary = "Listar utilizadores filtrando por nomes de roles")
+    public HttpResponse<?> findByRoles(@QueryValue List<String> roles) {
+        if (roles == null || roles.isEmpty()) {
+            return HttpResponse.badRequest(SuccessResponse.messageOnly("Lista de roles não pode ser vazia"));
+        }
+
+        List<User> users = userService.findUsersByRoles(roles);
+
+        List<UserDTO> dtos = users.stream()
+                .map(UserDTO::new)
+                .collect(Collectors.toList());
+
+        String message = dtos.isEmpty() ? "Sem dados para as roles fornecidas" : "Dados encontrados";
+        return HttpResponse.ok(SuccessResponse.of(message, dtos));
+    }
+
 }

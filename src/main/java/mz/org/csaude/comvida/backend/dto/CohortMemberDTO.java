@@ -27,15 +27,19 @@ public class CohortMemberDTO extends BaseEntityDTO {
 
     private SourceTypeEnum sourceType;
     private PatientImportFileDTO patientImportFile;
+    private GroupDTO group;
+    private UserDTO assignedByUser;
 
     public CohortMemberDTO() {}
 
     public CohortMemberDTO(CohortMember member) {
+        super(member);
         this.uuid = member.getUuid();
 
         this.cohort = member.getCohort() != null ? new CohortDTO(member.getCohort()) : null;
         this.patient = member.getPatient() != null ? new PatientDTO(member.getPatient()) : null;
         this.sourceSystem = member.getSourceSystem() != null ? new SourceSystemDTO(member.getSourceSystem()) : null;
+        this.assignedByUser = member.getAssignedBy() != null ? new UserDTO(member.getAssignedBy()) : null;
 
         this.originId = member.getOriginId();
         this.inclusionDate = member.getInclusionDate();
@@ -43,6 +47,7 @@ public class CohortMemberDTO extends BaseEntityDTO {
 
         this.sourceType = member.getSourceType();
         this.patientImportFile = member.getPatientImportFile() != null ? new PatientImportFileDTO(member.getPatientImportFile()) : null;
+        this.group = member.getGroup() != null ? new GroupDTO(member.getGroup()) : null;
 
     }
 

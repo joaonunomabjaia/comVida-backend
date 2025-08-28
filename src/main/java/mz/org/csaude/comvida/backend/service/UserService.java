@@ -639,4 +639,13 @@ public class UserService extends BaseService {
 
         return new ValidateImportResultDTO(errors);
     }
+    @Transactional
+    public List<User> findUsersByRoles(List<String> roleNames) {
+        if (roleNames == null || roleNames.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return userRepository.findUsersByRoleNamesWithGraph(roleNames);
+    }
+
+
 }

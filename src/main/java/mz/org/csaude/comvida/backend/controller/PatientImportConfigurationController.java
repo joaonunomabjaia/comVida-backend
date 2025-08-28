@@ -8,6 +8,7 @@ import io.micronaut.http.annotation.*;
 import io.micronaut.security.annotation.Secured;
 import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.rules.SecurityRule;
+import io.micronaut.transaction.annotation.Transactional;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.inject.Inject;
@@ -16,6 +17,7 @@ import mz.org.csaude.comvida.backend.api.response.PaginatedResponse;
 import mz.org.csaude.comvida.backend.api.response.SuccessResponse;
 import mz.org.csaude.comvida.backend.base.BaseController;
 import mz.org.csaude.comvida.backend.dto.PatientImportConfigurationDTO;
+import mz.org.csaude.comvida.backend.dto.PatientImportScheduleRequest;
 import mz.org.csaude.comvida.backend.entity.PatientImportConfiguration;
 import mz.org.csaude.comvida.backend.service.PatientImportConfigurationService;
 import mz.org.csaude.comvida.backend.util.Utilities;
@@ -39,7 +41,7 @@ public class PatientImportConfigurationController extends BaseController {
     @Operation(summary = "Listar ou pesquisar configurações (paginado)")
     @Get
     public HttpResponse<?> listOrSearch(@Nullable Pageable pageable,
-            @QueryValue("ProgramActivityId") @Nullable Long ProgramActivityId) {
+            @QueryValue("ProgramActivityId") @Nullable Long ProgramActivityId, @QueryValue("groupId") @Nullable Long groupId) {
 
         Page<PatientImportConfiguration> configs = service.findAll(resolvePageable(pageable));
 
@@ -53,6 +55,28 @@ public class PatientImportConfigurationController extends BaseController {
 
         return HttpResponse.ok(PaginatedResponse.of(dtos, configs.getTotalSize(), configs.getPageable(), message));
     }
+
+    @Operation(summary = "Agendar datas de inclusão/exclusão para membros de uma configuração")
+    @Post("/schedule")
+    @Transactional
+    public HttpResponse<?> scheduleMembers(@Body PatientImportScheduleRequest request,
+                                           Authentication authentication) {
+        String userUuid = (String) authentication.getAttributes().get("userUuid");
+
+        PatientImportConfiguration updatedConfig = service.updateSchedule(
+                request.getCohortId(),
+                request.getPatientImportFileId(),
+                request.getEntryDate(),
+                request.getExitDate(),
+                userUuid
+        );
+
+        return HttpResponse.ok(SuccessResponse.of(
+                "Datas de agendamento atualizadas com sucesso",
+                new PatientImportConfigurationDTO(updatedConfig)
+        ));
+    }
+
 
     @Operation(summary = "Buscar configuração por ID")
     @Get("/{id}")

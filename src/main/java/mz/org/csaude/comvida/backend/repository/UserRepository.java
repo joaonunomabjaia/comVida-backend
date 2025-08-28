@@ -56,6 +56,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUsername(String username);
     List<User> findByStatus(String status);
 
+
     @Query("""
           select distinct u from User u
             left join fetch u.userServiceRoles usr
@@ -69,5 +70,17 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("select lower(u.username) from User u where lower(u.username) in (:usernames)")
     List<String> findExistingUsernamesLower(Collection<String> usernames);
+
+    @Query("""
+        select distinct u from User u
+          left join fetch u.userServiceRoles usr
+          left join fetch usr.role r
+          left join fetch usr.programActivity pa
+          left join fetch pa.program p
+          left join fetch usr.userServiceRoleGroups usrg
+          left join fetch usrg.group g
+        where r.name in (:roleNames)
+    """)
+    List<User> findUsersByRoleNamesWithGraph(Collection<String> roleNames);
 
 }

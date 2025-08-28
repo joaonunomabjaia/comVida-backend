@@ -30,6 +30,8 @@ public class SheetImportStatusDTO extends BaseEntityDTO {
 
     private Long fileId;
 
+    private GroupDTO group;
+
     @Creator
     public SheetImportStatusDTO(SheetImportStatus entity) {
         super(entity);
@@ -38,6 +40,7 @@ public class SheetImportStatusDTO extends BaseEntityDTO {
         this.progress = entity.getProgress();
         this.message = entity.getMessage();
         this.fileId = entity.getFile() != null ? entity.getFile().getId() : null;
+        this.group = entity.getGroup() != null ? new GroupDTO(entity.getGroup()) : null;
     }
 
     public SheetImportStatus toEntity() {

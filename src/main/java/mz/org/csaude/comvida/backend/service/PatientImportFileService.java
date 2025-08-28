@@ -7,10 +7,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import mz.org.csaude.comvida.backend.dto.PatientImportFileDTO;
 import mz.org.csaude.comvida.backend.entity.*;
-import mz.org.csaude.comvida.backend.repository.PatientImportFileRepository;
-import mz.org.csaude.comvida.backend.repository.ProgramActivityRepository;
-import mz.org.csaude.comvida.backend.repository.SheetImportStatusRepository;
-import mz.org.csaude.comvida.backend.repository.SourceSystemRepository;
+import mz.org.csaude.comvida.backend.repository.*;
 import mz.org.csaude.comvida.backend.util.DateUtils;
 import mz.org.fgh.mentoring.util.LifeCycleStatus;
 import org.apache.poi.ss.usermodel.Row;
@@ -47,6 +44,8 @@ public class PatientImportFileService {
     private SourceSystemRepository sourceSystemRepository;
     @Inject
     private PatientImportFileRepository patientImportFileRepository;
+    @Inject
+    private GroupRepository groupRepository;
 
 
     public PatientImportFileService(PatientImportFileRepository repository) {
@@ -95,6 +94,8 @@ public class PatientImportFileService {
         try {
             ProgramActivity programActivity = programActivityRepository.findById(patientImportFileDTO.getProgramActivity().getId())
                     .orElseThrow(() -> new IllegalArgumentException("Serviço não encontrado com ID: " + patientImportFileDTO.getProgramActivity().getId()));
+            Group group = groupRepository.findById(patientImportFileDTO.getGroup().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Grupo não encontrado com ID: " + patientImportFileDTO.getGroup().getId()));
 
             SourceSystem sourceSystem = sourceSystemRepository.findById(sourceSystemId).orElseThrow(() -> new IllegalArgumentException("Fonte não encontrado com ID: " +  sourceSystemId)
             );
@@ -105,6 +106,7 @@ public class PatientImportFileService {
             importFile.setStatus(PatientImportFile.ImportStatus.PENDING);
             importFile.setProgress(0);
             importFile.setProgramActivity(programActivity);
+            importFile.setGroup(group);
             importFile.setMessage("Upload recebido para processamento. Sistema: " + sourceSystem.getCode());
             importFile.setSourceSystem(sourceSystem);
             importFile.setUuid(UUID.randomUUID().toString());

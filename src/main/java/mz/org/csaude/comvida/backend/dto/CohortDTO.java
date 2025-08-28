@@ -19,6 +19,7 @@ public class CohortDTO extends BaseEntityDTO {
     private String name;
     private String description;
     private ProgramActivityDTO programActivity;
+    private GroupDTO group;
 
 
     public CohortDTO(Cohort cohort) {
@@ -27,6 +28,9 @@ public class CohortDTO extends BaseEntityDTO {
         this.description = cohort.getDescription();
         if (cohort.getProgramActivity() != null) {
             this.programActivity = new ProgramActivityDTO(cohort.getProgramActivity());
+        }
+        if (cohort.getGroup() != null) {
+            this.group = new GroupDTO(cohort.getGroup());
         }
     }
 

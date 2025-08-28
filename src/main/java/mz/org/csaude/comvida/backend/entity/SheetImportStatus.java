@@ -27,8 +27,12 @@ public class SheetImportStatus extends BaseEntity {
     private String message;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "import_file_id", nullable = false)
+    @JoinColumn(name = "import_file_id")
     private PatientImportFile file;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "group_id")
+    private Group group;
 
     public enum SheetStatus {
         PENDING,

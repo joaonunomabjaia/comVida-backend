@@ -37,6 +37,9 @@ public class PatientImportFileDTO extends BaseEntityDTO {
     @NotNull(message = "SurceSystem is required.")
     private SourceSystemDTO sourceSystem;
 
+    @NotNull(message = "Group is required.")
+    private GroupDTO group;
+
     @Creator
     public PatientImportFileDTO(PatientImportFile entity) {
         super(entity);
@@ -46,6 +49,7 @@ public class PatientImportFileDTO extends BaseEntityDTO {
         this.message = entity.getMessage();
         this.programActivity = new ProgramActivityDTO(entity.getProgramActivity());
         this.sourceSystem = new SourceSystemDTO(entity.getSourceSystem());
+        this.group = entity.getGroup() != null ? new GroupDTO(entity.getGroup()) : null;
     }
 
     public PatientImportFile toEntity() {
@@ -62,6 +66,7 @@ public class PatientImportFileDTO extends BaseEntityDTO {
         entity.setProgress(this.progress);
         entity.setMessage(this.message);
         entity.setProgramActivity(this.programActivity.toEntity());
+        entity.setGroup(this.group != null ? this.group.toEntity() : null);
         entity.setSourceSystem(this.sourceSystem.toEntity());
 
         return entity;

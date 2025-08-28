@@ -36,9 +36,13 @@ public class CohortMemberService extends BaseService {
     @Inject
     private CohortService cohortService;
     @Inject
+    private GroupService groupService;
+    @Inject
     private SourceTypeService sourceTypeService;
     @Inject
     private SourceSystemService sourceSystemService;
+    @Inject
+    private UserService userService;
 
     public CohortMemberService(CohortMemberRepository cohortMemberRepository) {
         this.cohortMemberRepository = cohortMemberRepository;
@@ -88,6 +92,9 @@ public class CohortMemberService extends BaseService {
 //
         Cohort cohort = cohortService.findByDescription(cohortDescription)
                 .orElseThrow(() -> new IllegalArgumentException("Cohort não encontrado: " + cohortDescription));
+
+        Group group = groupService.findById(file.getGroup().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Grupo não encontrado: " + file.getGroup().getId()));
 //
         SourceSystem source = sourceSystemService.findByCode(file.getSourceSystem().getCode())
                 .orElseThrow(() -> new IllegalArgumentException("Fonte não encontrada: " + file.getSourceSystem().getCode()));
@@ -95,6 +102,7 @@ public class CohortMemberService extends BaseService {
         CohortMember member = new CohortMember();
         member.setPatient(patient);
         member.setCohort(cohort);
+        member.setGroup(group);
         member.setSourceSystem(source);
         member.setInclusionDate(DateUtils.getCurrentDate());
         member.setCreatedAt(DateUtils.getCurrentDate());
@@ -130,6 +138,52 @@ public class CohortMemberService extends BaseService {
     }
 
     @Transactional
+    public CohortMember allocation(Long cohortMemberId, Long assignedByUserId, String authUuid) {
+
+        CohortMember MemberToUpdate = cohortMemberRepository.findById(cohortMemberId)
+                .orElseThrow(() -> new IllegalArgumentException("Membro não encontrado: " + cohortMemberId));
+        User assignedByUser = userService.findById(assignedByUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario não encontrado: " + assignedByUserId));
+
+
+        MemberToUpdate.setAssignedBy(assignedByUser);
+        MemberToUpdate.setUpdatedAt(DateUtils.getCurrentDate());
+        MemberToUpdate.setUpdatedBy(authUuid);
+
+        return cohortMemberRepository.update(MemberToUpdate);
+    }
+
+    @Transactional
+    public List<CohortMember> bulkAllocation(List<Long> memberIds, Long assignedByUserId, String authUuid) {
+        User assignedByUser = userService.findById(assignedByUserId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado: " + assignedByUserId));
+
+        List<CohortMember> members = cohortMemberRepository.findAllByIdIn(memberIds);
+
+        if (members.size() != memberIds.size()) {
+            List<Long> foundIds = members.stream()
+                    .map(CohortMember::getId)
+                    .toList();
+
+            List<Long> missing = memberIds.stream()
+                    .filter(id -> !foundIds.contains(id))
+                    .toList();
+
+            throw new IllegalArgumentException("Membros não encontrados: " + missing);
+        }
+
+        for (CohortMember m : members) {
+            m.setAssignedBy(assignedByUser);
+            m.setUpdatedAt(DateUtils.getCurrentDate());
+            m.setUpdatedBy(authUuid);
+        }
+
+        return cohortMemberRepository.updateAll(members);
+    }
+
+
+
+    @Transactional
     public void delete(String uuid) {
         Optional<CohortMember> existing = cohortMemberRepository.findByUuid(uuid);
         existing.ifPresent(cohortMemberRepository::delete);
@@ -152,8 +206,7 @@ public class CohortMemberService extends BaseService {
     }
 
     public List<CohortMember> findByCohortIdAndPatientImportFileId(Long cohortId, Long patientImportFileId) {
-//        return cohortMemberRepository.findByCohortIdAndPatientImportFileId(cohortId, patientImportFileId);
-        return null;
+        return cohortMemberRepository.findByCohortIdAndPatientImportFileId(cohortId, patientImportFileId);
     }
 
 }

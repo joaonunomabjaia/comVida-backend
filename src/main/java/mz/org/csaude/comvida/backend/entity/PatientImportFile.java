@@ -38,6 +38,10 @@ public class PatientImportFile extends BaseEntity {
     @JoinColumn(name = "program_activity_id", nullable = false)
     private ProgramActivity programActivity;
 
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "group_id")
+    private Group group;
+
     public enum ImportStatus {
         PENDING,
         PROCESSING,

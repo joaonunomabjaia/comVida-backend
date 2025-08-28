@@ -19,7 +19,11 @@ public class Cohort extends BaseEntity {
     private String description;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "program_activity_id", nullable = false)
+    @JoinColumn(name = "group_id")
+    private Group group;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "program_activity_id")
     private ProgramActivity programActivity;
 
 }

@@ -6,7 +6,9 @@ import io.micronaut.data.model.Pageable;
 import io.micronaut.http.HttpResponse;
 import io.micronaut.http.annotation.*;
 import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.authentication.Authentication;
 import io.micronaut.security.rules.SecurityRule;
+import io.micronaut.transaction.annotation.Transactional;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.inject.Inject;
@@ -14,12 +16,14 @@ import mz.org.csaude.comvida.backend.api.RESTAPIMapping;
 import mz.org.csaude.comvida.backend.api.response.PaginatedResponse;
 import mz.org.csaude.comvida.backend.api.response.SuccessResponse;
 import mz.org.csaude.comvida.backend.base.BaseController;
+import mz.org.csaude.comvida.backend.dto.BulkAllocationRequest;
 import mz.org.csaude.comvida.backend.dto.CohortMemberDTO;
 import mz.org.csaude.comvida.backend.dto.CohortWithMembersDTO;
 import mz.org.csaude.comvida.backend.dto.ProgramDTO;
 import mz.org.csaude.comvida.backend.entity.CohortMember;
 import mz.org.csaude.comvida.backend.entity.Program;
 import mz.org.csaude.comvida.backend.service.CohortMemberService;
+import mz.org.csaude.comvida.backend.service.UserService;
 import mz.org.csaude.comvida.backend.util.Utilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +41,8 @@ public class CohortMemberController extends BaseController {
 
     @Inject
     private CohortMemberService cohortMemberService;
+    @Inject
+    private UserService userService;
 
     @Operation(summary = "List or searchcohort members (paginated)")
     @Get
@@ -100,8 +106,38 @@ public class CohortMemberController extends BaseController {
         );
     }
 
+    @Operation(summary = "Allocation of a member")
+    @Post("/allocation")
+    @Transactional
+    public HttpResponse<?> doAllocation(@QueryValue("memberId") Long memberId, @QueryValue("AssignedByUserId") Long assignedByUserId, Authentication authentication) {
+        String userUuid = (String) authentication.getAttributes().get("userUuid");
+
+        CohortMember member = cohortMemberService.allocation(memberId, assignedByUserId, userUuid);
+        return
+                HttpResponse.ok(
+                        SuccessResponse.of("Alocado com sucesso", new CohortMemberDTO(member))
+                );
+    }
+
+    @Post("/allocation/bulk")
+    @Transactional
+    public HttpResponse<?> bulkAllocation(@Body BulkAllocationRequest request, Authentication authentication) {
+        String userUuid = (String) authentication.getAttributes().get("userUuid");
+
+        List<CohortMemberDTO> dtos = cohortMemberService
+                .bulkAllocation(request.getMemberIds(), request.getAssignedByUserId(), userUuid)
+                .stream()
+                .map(CohortMemberDTO::new)
+                .toList();
+
+        return HttpResponse.ok(SuccessResponse.of("Membros alocados com sucesso", dtos));
+    }
+
+
+
     @Operation(summary = "Paginated list of members by cohort and file")
     @Get("/by-cohort-and-file/")
+    @Transactional
     public HttpResponse<?> findByCohortIdAndPatientImportFileId(@QueryValue("cohortId") Long cohortId, @QueryValue("fileId") Long fileId,
                                        @Nullable Pageable pageable) {
 

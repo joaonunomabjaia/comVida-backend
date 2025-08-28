@@ -1044,4 +1044,79 @@
                 columnDataType="date"/>
     </changeSet>
 
+    <changeSet id="20250820-01-add-group-to-patient-import-file" author="joao">
+        <addColumn tableName="patient_import_files">
+            <column name="group_id" type="BIGINT">
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint
+                baseTableName="patient_import_files"
+                baseColumnNames="group_id"
+                constraintName="fk_patient_import_files_group"
+                referencedTableName="groups"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+
+    <changeSet id="20250820-02-add-group-to-cohort" author="joao">
+        <addColumn tableName="cohorts">
+            <column name="group_id" type="BIGINT">
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint
+                baseTableName="cohorts"
+                baseColumnNames="group_id"
+                constraintName="fk_cohort_group"
+                referencedTableName="groups"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+
+    <changeSet id="20250820-03-add-group-to-cohort-member" author="joao">
+        <addColumn tableName="cohort_members">
+            <column name="group_id" type="BIGINT">
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint
+                baseTableName="cohort_members"
+                baseColumnNames="group_id"
+                constraintName="fk_cohort_member_group"
+                referencedTableName="groups"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+
+    <changeSet id="20250820-04-add-group-to-sheet-import-status" author="joao">
+        <addColumn tableName="sheet_import_status">
+            <column name="group_id" type="BIGINT">
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint
+                baseTableName="sheet_import_status"
+                baseColumnNames="group_id"
+                constraintName="fk_sheet_import_status_group"
+                referencedTableName="groups"
+                referencedColumnNames="id"/>
+    </changeSet>
+
+    <changeSet id="add-assigned-by-user-id-to-cohort-members" author="joao.mabjaia">
+        <addColumn tableName="cohort_members">
+            <column name="assigned_by_user_id" type="BIGINT">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+
+        <addForeignKeyConstraint
+                baseTableName="cohort_members"
+                baseColumnNames="assigned_by_user_id"
+                constraintName="fk_cohort_members_assigned_by_user"
+                referencedTableName="users"
+                referencedColumnNames="id"
+                onDelete="SET NULL"/>
+    </changeSet>
+
 </databaseChangeLog>

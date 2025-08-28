@@ -1,5 +1,6 @@
 package mz.org.csaude.comvida.backend.entity;
 
+import io.micronaut.core.annotation.Introspected;
 import io.micronaut.serde.annotation.Serdeable;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -11,7 +12,8 @@ import java.util.Date;
 @Entity
 @Getter
 @Setter
-@Serdeable.Deserializable
+@Serdeable
+@Introspected
 @Table(name = "patient_import_configurations")
 public class PatientImportConfiguration extends BaseEntity {
 
@@ -27,11 +29,11 @@ public class PatientImportConfiguration extends BaseEntity {
     @JoinColumn(name = "program_activity_id", nullable = false)
     private ProgramActivity programActivity;
 
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "entry_date")
     private Date entryDate;
 
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "exit_date")
     private Date exitDate;
 

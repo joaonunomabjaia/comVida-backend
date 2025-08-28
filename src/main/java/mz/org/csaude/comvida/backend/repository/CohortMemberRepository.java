@@ -71,6 +71,38 @@ public interface CohortMemberRepository extends CrudRepository<CohortMember, Lon
     )
     Page<CohortMember> findByCohortIdAndPatientImportFileId(Long cohortId, Long patientImportFileId, Pageable pageable);
 
+//    @Query(
+//            value = """
+//        SELECT cm
+//        FROM CohortMember cm
+//        WHERE (:cohortId IS NULL OR cm.cohort.id = :cohortId)
+//          AND (:patientImportFileId IS NULL OR cm.patientImportFile.id = :patientImportFileId)
+//    """,
+//            countQuery = """
+//        SELECT COUNT(cm)
+//        FROM CohortMember cm
+//        WHERE (:cohortId IS NULL OR cm.cohort.id = :cohortId)
+//          AND (:patientImportFileId IS NULL OR cm.patientImportFile.id = :patientImportFileId)
+//    """
+//    )
+//    Page<CohortMember> findByCohortIdAndPatientImportFileId(@Nullable Long cohortId, @Nullable Long patientImportFileId, Pageable pageable);
+
+
+    @Query(
+            nativeQuery = true,
+            value = """
+        SELECT cm.*
+        FROM cohort_members cm
+        WHERE cm.cohort_id = :cohortId
+          AND cm.import_file_id = :patientImportFileId
+    """
+    )
+    List<CohortMember> findByCohortIdAndPatientImportFileId(
+            @NotNull Long cohortId,
+            @NotNull Long patientImportFileId
+    );
+
+
     @Query(
             nativeQuery = true,
             value = """
@@ -88,8 +120,8 @@ public interface CohortMemberRepository extends CrudRepository<CohortMember, Lon
     )
     Page<CohortMember> findByProgramActivityId(@Nullable String activityId, Pageable pageable);
 
-
-//    List<CohortMember> findByCohortIdAndPatientImportFileId(Long cohortId, Long patientImportFileId);
+    @Query("SELECT cm FROM CohortMember cm WHERE cm.id IN :memberIds")
+    List<CohortMember> findAllByIdIn(List<Long> memberIds);
 
     long countByCohort(Cohort cohort);
 

@@ -71,35 +71,45 @@ public class PatientImportConfigurationService {
         return repository.save(patientImportConfiguration);
     }
 
-    public PatientImportConfiguration updateSchedule(Long cohortId, Long patientImportfileId, @Nullable String entryDate, @Nullable String exitDate) {
-        PatientImportConfiguration patientImportConfiguration = repository.findByCohortIdAndImportFileId(cohortId, patientImportfileId)
+    public PatientImportConfiguration updateSchedule(Long cohortId, Long patientImportFileId,
+                                                     @Nullable String entryDate, @Nullable String exitDate, String userUuid) {
+
+        // 1️⃣ Buscar configuração
+        PatientImportConfiguration config = repository.findByCohortIdAndImportFileId(cohortId, patientImportFileId)
                 .orElseThrow(() -> new IllegalArgumentException("Configuração não encontrada"));
 
+        // 2️⃣ Atualizar datas da configuração
         if (entryDate != null) {
-            patientImportConfiguration.setEntryDate(DateUtils.createDate(entryDate, "DD-MM-YYYY"));
+            config.setEntryDate(DateUtils.createDate(entryDate, "dd-MM-yyyy"));
         }
 
         if (exitDate != null) {
-            patientImportConfiguration.setExitDate(DateUtils.createDate(exitDate,  "DD-MM-YYYY"));
+            config.setExitDate(DateUtils.createDate(exitDate, "dd-MM-yyyy"));
         }
-        patientImportConfiguration.setUpdatedAt(DateUtils.getCurrentDate());
-        patientImportConfiguration.setUpdatedBy("System");
 
-        // a seguir vamos pegar todos cohortMember pertencentes a esta comfig
-        List<CohortMember> cohortMembers = cohortMemberService.findByCohortIdAndPatientImportFileId(cohortId, patientImportConfiguration.getId());
+        config.setUpdatedAt(DateUtils.getCurrentDate());
+        config.setUpdatedBy(userUuid);
 
-        // vamos fazer um loop que actualiza o inclusionDate e exclusionDate de cada Membro
+        repository.update(config);
 
-        cohortMembers.forEach(member -> {
+        // 3️⃣ Buscar membros relacionados
+        List<CohortMember> cohortMembers = cohortMemberService.findByCohortIdAndPatientImportFileId(cohortId, patientImportFileId);
+
+        // 4️⃣ Atualizar datas dos membros
+        for (CohortMember member : cohortMembers) {
+            if (entryDate != null) {
+                member.setInclusionDate(DateUtils.createDate(entryDate, "dd-MM-yyyy"));
+            }
+            if (exitDate != null) {
+                member.setExclusionDate(DateUtils.createDate(exitDate, "dd-MM-yyyy"));
+            }
             member.setUpdatedAt(DateUtils.getCurrentDate());
             member.setUpdatedBy("System");
-            member.setInclusionDate(DateUtils.createDate(entryDate, "DD-MM-YYYY"));
-            member.setExclusionDate(DateUtils.createDate(exitDate, "DD-MM-YYYY"));
 
             cohortMemberService.update(member);
-        });
+        }
 
-
-        return repository.update(patientImportConfiguration);
+        return config;
     }
+
 }
