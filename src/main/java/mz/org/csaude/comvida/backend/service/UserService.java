@@ -1,17 +1,24 @@
 package mz.org.csaude.comvida.backend.service;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micronaut.core.annotation.Nullable;
 import io.micronaut.data.model.Page;
 import io.micronaut.data.model.Pageable;
 import jakarta.inject.Singleton;
 import jakarta.transaction.Transactional;
 import mz.org.csaude.comvida.backend.base.BaseService;
+import mz.org.csaude.comvida.backend.dto.imports.ImportErrorItemDTO;
+import mz.org.csaude.comvida.backend.dto.imports.ImportResultDTO;
+import mz.org.csaude.comvida.backend.dto.imports.ImportUserRowDTO;
+import mz.org.csaude.comvida.backend.dto.imports.ValidateImportResultDTO;
 import mz.org.csaude.comvida.backend.entity.*;
 import mz.org.csaude.comvida.backend.repository.*;
 import mz.org.csaude.comvida.backend.util.DateUtils;
 import mz.org.csaude.comvida.backend.util.Utilities;
 import mz.org.fgh.mentoring.util.LifeCycleStatus;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -25,20 +32,42 @@ public class UserService extends BaseService {
     private final ProgramActivityRepository programActivityRepository;
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
+    private final CohortMemberRepository cohortMemberRepository;
+    private final PersonRepository personRepository;
+    private final SourceSystemRepository  sourceSystemRepository;
+    private static final ObjectMapper M = new ObjectMapper();
+    private static String norm(String v){ return v==null? "": v.trim(); }
+    private static String lower(String v){ return norm(v).toLowerCase(); }
 
     public UserService(UserRepository userRepository,
                        UserServiceRoleRepository userServiceRoleRepository,
                        UserServiceRoleGroupRepository userServiceRoleGroupRepository,
                        RoleRepository roleRepository,
                        ProgramActivityRepository programActivityRepository,
-                       GroupRepository groupRepository) {
+                       GroupRepository groupRepository, CohortMemberRepository cohortMemberRepository, PersonRepository personRepository, SourceSystemRepository sourceSystemRepository) {
         this.userRepository = userRepository;
         this.userServiceRoleRepository = userServiceRoleRepository;
         this.userServiceRoleGroupRepository = userServiceRoleGroupRepository;
         this.roleRepository = roleRepository;
         this.programActivityRepository = programActivityRepository;
         this.groupRepository = groupRepository;
+        this.cohortMemberRepository = cohortMemberRepository;
+        this.personRepository = personRepository;
+        this.sourceSystemRepository = sourceSystemRepository;
     }
+
+    private static String buildNamesJson(String first, String last) {
+        try {
+            var node = new LinkedHashMap<String,Object>();
+            node.put("firstName", norm(first));
+            node.put("lastName",  norm(last));
+            node.put("prefered",  true);
+            var arr = new ArrayList<Map<String,Object>>();
+            arr.add(node);
+            return M.writeValueAsString(arr);
+        } catch (JsonProcessingException e) { return "[]"; }
+    }
+
     public List<User> findAll() {
         return userRepository.findAll();
     }
@@ -372,13 +401,31 @@ public class UserService extends BaseService {
 
     @Transactional
     public void delete(String uuid) {
-        Optional<User> existing = userRepository.findByUuid(uuid);
-        existing.ifPresent(userRepository::delete);
+        User user = userRepository.findByUuid(uuid)
+                .orElseThrow(() -> new RuntimeException("User not found with UUID: " + uuid));
+
+        // createdBy stores the creator's UUID (string)
+        String creator = user.getUuid();
+
+        boolean createdCohortMembers = cohortMemberRepository.existsByCreatedBy(creator);
+        boolean createdPersons       = personRepository.existsByCreatedBy(creator);
+
+        if (createdCohortMembers || createdPersons) {
+            long cm = cohortMemberRepository.countByCreatedBy(creator);
+            long ps = personRepository.countByCreatedBy(creator);
+            throw new IllegalStateException(
+                    "Não é possível apagar o utilizador: existem registos criados por ele. " +
+                            "CohortMembers=" + cm + ", Pessoas=" + ps
+            );
+        }
+
+        userRepository.delete(user);
     }
+
 
     @Transactional
     public User updateLifeCycleStatus(String uuid, LifeCycleStatus status) {
-        Optional<User> existing = userRepository.findByUuid(uuid);
+        Optional<User> existing = userRepository.findByUuidFetchRolesAndGroups(uuid);
         if (existing.isEmpty()) throw new RuntimeException("User not found");
 
         User user = existing.get();
@@ -405,5 +452,191 @@ public class UserService extends BaseService {
         user.setUpdatedAt(DateUtils.getCurrentDate());
 
         userRepository.update(user);
+    }
+
+    /**
+     * Importação em lote:
+     * - valida obrigatórios e duplicados (ficheiro + BD)
+     * - integratedSystem: aceita code/description de SourceSystem ativo
+     * - grava Person.names e User.attributes conforme padrão atual
+     * - gera password temporária e marca shouldResetPassword=true
+     */
+    @Transactional
+    public ImportResultDTO importUsers(List<ImportUserRowDTO> rows, String actorUuid) {
+        if (rows == null || rows.isEmpty()) return new ImportResultDTO(0,0,List.of());
+
+        // 1) Mapear SourceSystems ativos por token (code/description)
+        Map<String, SourceSystem> sysMap = new HashMap<>();
+        for (SourceSystem ss : sourceSystemRepository.findAll()) {
+            boolean active = ss.getLifeCycleStatus() == null
+                    || !LifeCycleStatus.INACTIVE.equals(ss.getLifeCycleStatus());
+            if (!active) continue;
+            if (StringUtils.isNotBlank(ss.getCode()))        sysMap.put(lower(ss.getCode()), ss);
+            if (StringUtils.isNotBlank(ss.getDescription())) sysMap.put(lower(ss.getDescription()), ss);
+        }
+
+        // 2) Validações base + duplicados no ficheiro
+        List<ImportErrorItemDTO> errors = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        for (int i=0;i<rows.size();i++){
+            var r = rows.get(i);
+            List<String> msgs = new ArrayList<>();
+            if (StringUtils.isBlank(r.getName()))     msgs.add("Nome é obrigatório");
+            if (StringUtils.isBlank(r.getSurname()))  msgs.add("Apelido é obrigatório");
+            if (StringUtils.isBlank(r.getUsername())) msgs.add("Username é obrigatório");
+            String u = lower(r.getUsername());
+            if (StringUtils.isNotBlank(u) && !seen.add(u)) msgs.add("Username duplicado no ficheiro");
+
+            String sys = norm(r.getIntegratedSystem());
+            if (StringUtils.isNotBlank(sys)) {
+                if (!sysMap.containsKey(lower(sys)))
+                    msgs.add("Sistema Integrado inválido: \"" + r.getIntegratedSystem() + "\"");
+                if (StringUtils.isBlank(r.getIdOnIntegratedSystem()))
+                    msgs.add("ID no Sistema é obrigatório quando Sistema Integrado é informado");
+            }
+            if (!msgs.isEmpty()) errors.add(new ImportErrorItemDTO(i, r.getUsername(), msgs));
+        }
+
+        // 3) Duplicados na BD
+        Set<String> toCheck = rows.stream()
+                .map(ImportUserRowDTO::getUsername)
+                .filter(StringUtils::isNotBlank)
+                .map(UserService::lower).collect(Collectors.toSet());
+        if (!toCheck.isEmpty()) {
+            Set<String> exists = new HashSet<>(userRepository.findExistingUsernamesLower(toCheck));
+            for (int i=0;i<rows.size();i++){
+                if (exists.contains(lower(rows.get(i).getUsername()))) {
+                    int finalI = i;
+                    Optional<ImportErrorItemDTO> item = errors.stream().filter(e -> e.getIndex()== finalI).findFirst();
+                    if (item.isPresent()) item.get().getMessages().add("Username já existente no sistema");
+                    else errors.add(new ImportErrorItemDTO(i, rows.get(i).getUsername(), List.of("Username já existente no sistema")));
+                }
+            }
+        }
+
+        // 4) Filtrar válidos
+        Set<Integer> bad = errors.stream().map(ImportErrorItemDTO::getIndex).collect(Collectors.toSet());
+        List<ImportUserRowDTO> valids = new ArrayList<>();
+        for (int i=0;i<rows.size();i++) if (!bad.contains(i)) valids.add(rows.get(i));
+        if (valids.isEmpty()) return new ImportResultDTO(0, rows.size(), errors);
+
+        // 5) Persistir válidos
+        int imported = 0;
+        for (var r : valids) {
+            // display do sistema integrado
+            String sysToken = lower(r.getIntegratedSystem());
+            String systemName = null;
+            if (StringUtils.isNotBlank(sysToken)) {
+                SourceSystem ss = sysMap.get(sysToken);
+                systemName = (ss != null)
+                        ? (StringUtils.defaultIfBlank(ss.getDescription(), ss.getCode()))
+                        : norm(r.getIntegratedSystem());
+            }
+
+            User u = new User();
+            // Person.* (JSON strings)
+            u.setNames(buildNamesJson(r.getName(), r.getSurname()));
+            u.setAddress("[]");
+            u.setPersonAttributes("[]");
+
+            // User básicos
+            u.setUsername(norm(r.getUsername()));
+            u.setStatus(LifeCycleStatus.ACTIVE.name());
+            u.setLifeCycleStatus(LifeCycleStatus.ACTIVE);
+
+            // password temporária + reset
+            String temp = UUID.randomUUID().toString().replace("-", "").substring(0,10);
+            String salt = Utilities.generateSalt();
+            u.setSalt(salt);
+            u.setPassword(Utilities.encryptPassword(temp, salt));
+            u.setShouldResetPassword(true);
+
+            // attributes JSONB (integratedSystemName + idOnIntegratedSystem)
+            List<Map<String,Object>> attrs = new ArrayList<>();
+            if (StringUtils.isNotBlank(systemName)) {
+                var node = new LinkedHashMap<String,Object>();
+                node.put("type", "integratedSystem");
+                node.put("idOnIntegratedSystem", norm(r.getIdOnIntegratedSystem()));
+                node.put("integratedSystemName", systemName);
+                attrs.add(node);
+            }
+            u.setAttributesAsMap(attrs);
+
+            // auditoria
+            u.setCreatedAt(DateUtils.getCurrentDate());
+            u.setCreatedBy(actorUuid);
+
+            userRepository.save(u);
+            imported++;
+        }
+
+        return new ImportResultDTO(imported, rows.size() - imported, errors);
+    }
+
+    @Transactional
+    public ValidateImportResultDTO validateImport(List<ImportUserRowDTO> rows) {
+        if (rows == null || rows.isEmpty())
+            return new ValidateImportResultDTO(List.of());
+
+        // map de SourceSystems ativos por code/description (lowercase)
+        Map<String, SourceSystem> sysMap = new HashMap<>();
+        for (SourceSystem ss : sourceSystemRepository.findAll()) {
+            boolean active = ss.getLifeCycleStatus() == null
+                    || !LifeCycleStatus.INACTIVE.equals(ss.getLifeCycleStatus());
+            if (!active) continue;
+            if (StringUtils.isNotBlank(ss.getCode()))        sysMap.put(ss.getCode().trim().toLowerCase(), ss);
+            if (StringUtils.isNotBlank(ss.getDescription())) sysMap.put(ss.getDescription().trim().toLowerCase(), ss);
+        }
+
+        List<ImportErrorItemDTO> errors = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+
+        // validações base + duplicado no ficheiro
+        for (int i = 0; i < rows.size(); i++) {
+            final int idx = i;
+            var r = rows.get(i);
+            List<String> msgs = new ArrayList<>();
+
+            //if (StringUtils.isBlank(r.getName()))     msgs.add("Nome é obrigatório");
+            //if (StringUtils.isBlank(r.getSurname()))  msgs.add("Apelido é obrigatório");
+            //if (StringUtils.isBlank(r.getUsername())) msgs.add("Username é obrigatório");
+
+            //String uname = StringUtils.trimToEmpty(r.getUsername()).toLowerCase();
+            //if (!uname.isEmpty() && !seen.add(uname)) msgs.add("Username duplicado no ficheiro");
+
+            //String sys = StringUtils.trimToEmpty(r.getIntegratedSystem());
+            /*if (!sys.isEmpty()) {
+                if (!sysMap.containsKey(sys.toLowerCase()))
+                    msgs.add("Sistema Integrado inválido: \"" + r.getIntegratedSystem() + "\"");
+                if (StringUtils.isBlank(r.getIdOnIntegratedSystem()))
+                    msgs.add("ID no Sistema é obrigatório quando Sistema Integrado é informado");
+            }*/
+
+            if (!msgs.isEmpty())
+                errors.add(new ImportErrorItemDTO(idx, r.getUsername(), msgs));
+        }
+
+        // duplicados na BD
+        Set<String> toCheck = rows.stream()
+                .map(ImportUserRowDTO::getUsername)
+                .filter(StringUtils::isNotBlank)
+                .map(s -> s.trim().toLowerCase())
+                .collect(java.util.stream.Collectors.toSet());
+
+        if (!toCheck.isEmpty()) {
+            Set<String> exists = new HashSet<>(userRepository.findExistingUsernamesLower(toCheck));
+            for (int i = 0; i < rows.size(); i++) {
+                final int idx = i;
+                String uname = StringUtils.trimToEmpty(rows.get(i).getUsername()).toLowerCase();
+                if (exists.contains(uname)) {
+                    Optional<ImportErrorItemDTO> item = errors.stream().filter(e -> e.getIndex() == idx).findFirst();
+                    if (item.isPresent()) item.get().getMessages().add("Username já existente no sistema");
+                    else errors.add(new ImportErrorItemDTO(idx, rows.get(i).getUsername(),
+                            List.of("Username já existente no sistema")));
+                }
+            }
+        }
+
+        return new ValidateImportResultDTO(errors);
     }
 }

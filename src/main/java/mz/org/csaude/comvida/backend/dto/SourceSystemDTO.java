@@ -13,17 +13,23 @@ import mz.org.csaude.comvida.backend.entity.SourceSystem;
 @Getter
 @Setter
 @Serdeable
-@NoArgsConstructor
 @Schema(name = "SourceSystemDTO", description = "DTO representing a source system (e.g., OPENMRS, IDMED)")
 public class SourceSystemDTO extends BaseEntityDTO {
 
     @NotEmpty(message = "The name of the source system is required.")
     private String code;
 
+    private String description;
+
     @Creator
+    public SourceSystemDTO() {
+    }
+
+
     public SourceSystemDTO(SourceSystem sourceSystem) {
         super(sourceSystem);
         this.code = sourceSystem.getCode();
+        this.description = sourceSystem.getDescription();
     }
 
     public SourceSystem toEntity() {
@@ -35,6 +41,7 @@ public class SourceSystemDTO extends BaseEntityDTO {
         sourceSystem.setCreatedBy(this.getCreatedBy());
         sourceSystem.setUpdatedAt(this.getUpdatedAt());
         sourceSystem.setUpdatedBy(this.getUpdatedBy());
+        sourceSystem.setDescription(this.getDescription());
         return sourceSystem;
     }
 }

@@ -16,6 +16,8 @@ import mz.org.csaude.comvida.backend.api.response.PaginatedResponse;
 import mz.org.csaude.comvida.backend.api.response.SuccessResponse;
 import mz.org.csaude.comvida.backend.base.BaseController;
 import mz.org.csaude.comvida.backend.dto.*;
+import mz.org.csaude.comvida.backend.dto.imports.ImportUserRowDTO;
+import mz.org.csaude.comvida.backend.dto.imports.ValidateImportResultDTO;
 import mz.org.csaude.comvida.backend.dto.request.AssignUserRolesRequest;
 import mz.org.csaude.comvida.backend.dto.request.ReplaceUserRolesRequest;
 import mz.org.csaude.comvida.backend.entity.User;
@@ -200,5 +202,21 @@ public class UserController extends BaseController {
         return HttpResponse.ok(
                 SuccessResponse.messageOnly("Senha do utilizador atualizada com sucesso")
         );
+    }
+
+    @Post("/import")
+    @Operation(summary = "Importar utilizadores (lote)")
+    public HttpResponse<?> importUsers(@Body List<ImportUserRowDTO> rows,
+                                       Authentication auth) {
+        String actorUuid = (String) auth.getAttributes().get("userUuid");
+        var result = userService.importUsers(rows, actorUuid);
+        return HttpResponse.ok(SuccessResponse.of("Importação concluída", result));
+    }
+
+    @Post("/import/validate")
+    @Operation(summary = "Validar importação de utilizadores (sem gravar)")
+    public HttpResponse<?> validateImport(@Body List<ImportUserRowDTO> rows) {
+        ValidateImportResultDTO res = userService.validateImport(rows);
+        return HttpResponse.ok(SuccessResponse.of("Validação concluída", res));
     }
 }

@@ -55,4 +55,19 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByUuid(String uuid);
     Optional<User> findByUsername(String username);
     List<User> findByStatus(String status);
+
+    @Query("""
+          select distinct u from User u
+            left join fetch u.userServiceRoles usr
+            left join fetch usr.role r
+            left join fetch usr.programActivity pa
+            left join fetch pa.program p
+            left join fetch usr.userServiceRoleGroups usrg
+          where u.uuid = :uuid
+        """)
+    Optional<User> findByUuidFetchRolesAndGroups(String uuid);
+
+    @Query("select lower(u.username) from User u where lower(u.username) in (:usernames)")
+    List<String> findExistingUsernamesLower(Collection<String> usernames);
+
 }
