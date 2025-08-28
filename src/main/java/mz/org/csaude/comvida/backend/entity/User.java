@@ -45,8 +45,7 @@ public class User extends Person {
     /**
      * JSONB column that stores an ARRAY of objects. Example:
      * [
-     *   { "integratedSystem": 2, "idOnIntegratedSystem": "123456" },
-     *   { "userServiceRoles": [ { ... }, { ... } ] }
+     *   { "type": "integratedSystem", "integratedSystem": 2, "idOnIntegratedSystem": "123456" },
      * ]
      */
     @Column(columnDefinition = "jsonb")

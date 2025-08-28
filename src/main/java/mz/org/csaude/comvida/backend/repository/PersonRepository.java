@@ -24,4 +24,7 @@ public interface PersonRepository extends CrudRepository<Person, Long> {
     List<Person> findByBirthdate(Date birthdate);
 
     Optional<Person> findByUuid(String uuid);
+
+    boolean existsByCreatedBy(String createdBy);
+    long countByCreatedBy(String createdBy);
 }
