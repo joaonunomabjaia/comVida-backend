@@ -5,6 +5,7 @@ import io.micronaut.serde.annotation.Serdeable;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import mz.org.csaude.comvida.backend.base.BaseEntityDTO;
 import mz.org.csaude.comvida.backend.entity.ProgramActivity;
 import mz.org.csaude.comvida.backend.entity.Role;
 import mz.org.csaude.comvida.backend.entity.UserServiceRole;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 @Serdeable
-public class UserServiceRoleDTO {
+public class UserServiceRoleDTO extends BaseEntityDTO {
 
     /** Optional: useful for UI; entity uses ProgramActivity for FK. */
     private Long programId;
@@ -38,6 +39,7 @@ public class UserServiceRoleDTO {
 
     @Creator
     public UserServiceRoleDTO() {
+        super();
     }
 
     public UserServiceRoleDTO(UserServiceRole e) {

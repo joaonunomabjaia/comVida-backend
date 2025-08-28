@@ -91,4 +91,8 @@ public interface CohortMemberRepository extends CrudRepository<CohortMember, Lon
 
 //    List<CohortMember> findByCohortIdAndPatientImportFileId(Long cohortId, Long patientImportFileId);
 
+    long countByCohort(Cohort cohort);
+
+    boolean existsByCreatedBy(String createdBy);
+    long countByCreatedBy(String createdBy);
 }

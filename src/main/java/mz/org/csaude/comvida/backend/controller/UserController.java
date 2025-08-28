@@ -15,10 +15,9 @@ import mz.org.csaude.comvida.backend.api.RESTAPIMapping;
 import mz.org.csaude.comvida.backend.api.response.PaginatedResponse;
 import mz.org.csaude.comvida.backend.api.response.SuccessResponse;
 import mz.org.csaude.comvida.backend.base.BaseController;
-import mz.org.csaude.comvida.backend.dto.LifeCycleStatusDTO;
-import mz.org.csaude.comvida.backend.dto.RoleDTO;
-import mz.org.csaude.comvida.backend.dto.UserDTO;
-import mz.org.csaude.comvida.backend.dto.UserServiceRoleDTO;
+import mz.org.csaude.comvida.backend.dto.*;
+import mz.org.csaude.comvida.backend.dto.imports.ImportUserRowDTO;
+import mz.org.csaude.comvida.backend.dto.imports.ValidateImportResultDTO;
 import mz.org.csaude.comvida.backend.dto.request.AssignUserRolesRequest;
 import mz.org.csaude.comvida.backend.dto.request.ReplaceUserRolesRequest;
 import mz.org.csaude.comvida.backend.entity.User;
@@ -191,5 +190,33 @@ public class UserController extends BaseController {
                                       @Nullable @QueryValue("programActivityUuid") String programActivityUuid) {
         userServiceRoleService.removeRole(userUuid, roleUuid, programActivityUuid);
         return HttpResponse.ok(SuccessResponse.messageOnly("Role removida com sucesso"));
+    }
+
+    @Operation(summary = "Update User password")
+    @Put("/{uuid}/password")
+    public HttpResponse<?> updatePassword(@PathVariable String uuid,
+                                          @Body UserPasswordDTO dto,
+                                          Authentication authentication) {
+        String updatedByUuid = (String) authentication.getAttributes().get("useruuid");
+        userService.updatePassword(uuid, dto.getNewPassword(), updatedByUuid);
+        return HttpResponse.ok(
+                SuccessResponse.messageOnly("Senha do utilizador atualizada com sucesso")
+        );
+    }
+
+    @Post("/import")
+    @Operation(summary = "Importar utilizadores (lote)")
+    public HttpResponse<?> importUsers(@Body List<ImportUserRowDTO> rows,
+                                       Authentication auth) {
+        String actorUuid = (String) auth.getAttributes().get("userUuid");
+        var result = userService.importUsers(rows, actorUuid);
+        return HttpResponse.ok(SuccessResponse.of("Importação concluída", result));
+    }
+
+    @Post("/import/validate")
+    @Operation(summary = "Validar importação de utilizadores (sem gravar)")
+    public HttpResponse<?> validateImport(@Body List<ImportUserRowDTO> rows) {
+        ValidateImportResultDTO res = userService.validateImport(rows);
+        return HttpResponse.ok(SuccessResponse.of("Validação concluída", res));
     }
 }
